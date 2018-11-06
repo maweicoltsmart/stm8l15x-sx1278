@@ -1,0 +1,7 @@
+settings/
+Debug/
+Obj/
+*.dep
+*.ewt
+Backup*.*
+*.out
