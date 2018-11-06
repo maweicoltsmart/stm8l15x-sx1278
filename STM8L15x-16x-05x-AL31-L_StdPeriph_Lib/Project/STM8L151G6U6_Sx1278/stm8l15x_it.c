@@ -28,6 +28,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8l15x_it.h"
+#include "stddef.h"
+#include "ring_buf.h"
+#include "delay.h"
+#include "board.h"
 
 /** @addtogroup STM8L15x_StdPeriph_Template
   * @{
@@ -149,7 +153,12 @@ INTERRUPT_HANDLER(EXTID_H_IRQHandler,7)
        it is recommended to set a breakpoint on the following instruction.
     */
 }
-
+void SX1276OnDio0Irq( void* context );
+void SX1276OnDio1Irq( void* context );
+void SX1276OnDio2Irq( void* context );
+void SX1276OnDio3Irq( void* context );
+void SX1276OnDio4Irq( void* context );
+void SX1276OnDio5Irq( void* context );
 /**
   * @brief External IT PIN0 Interrupt routine.
   * @param  None
@@ -160,6 +169,8 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO0_EXTI_IT_PIN);
+    SX1276OnDio0Irq( NULL );
 }
 
 /**
@@ -172,6 +183,7 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(EXTI_IT_Pin1);
 }
 
 /**
@@ -184,6 +196,8 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
+    SX1276OnDio3Irq( NULL );
 }
 
 /**
@@ -196,6 +210,8 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO2_EXTI_IT_PIN);
+    SX1276OnDio2Irq( NULL );
 }
 
 /**
@@ -208,6 +224,8 @@ INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO1_EXTI_IT_PIN);
+    SX1276OnDio1Irq( NULL );
 }
 
 /**
@@ -220,6 +238,8 @@ INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO5_EXTI_IT_PIN);
+    SX1276OnDio5Irq( NULL );
 }
 
 /**
@@ -232,6 +252,8 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(SX1278_DIO4_EXTI_IT_PIN);
+    SX1276OnDio4Irq( NULL );
 }
 
 /**
@@ -244,6 +266,7 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    EXTI_ClearITPendingBit(EXTI_IT_Pin7);
 }
 /**
   * @brief LCD /AES Interrupt routine.
@@ -290,6 +313,7 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    TIM2_ClearITPendingBit(TIM2_IT_Update);
 }
 
 /**
@@ -349,7 +373,7 @@ INTERRUPT_HANDLER(TIM1_CC_IRQHandler,24)
        it is recommended to set a breakpoint on the following instruction.
     */
 }
-
+void SysTick_Handler( void );
 /**
   * @brief TIM4 Update/Overflow/Trigger Interrupt routine.
   * @param  None
@@ -360,6 +384,10 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler,25)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    /* Cleat Interrupt Pending bit */
+    TIM4_ClearITPendingBit(TIM4_IT_Update);
+    //TimingDelay_Decrement();
+    SysTick_Handler();
 }
 /**
   * @brief SPI1 Interrupt routine.
@@ -372,7 +400,7 @@ INTERRUPT_HANDLER(SPI1_IRQHandler,26)
        it is recommended to set a breakpoint on the following instruction.
     */		
 }
-
+extern ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
 /**
   * @brief USART1 TX / TIM5 Update/Overflow/Trigger/Break Interrupt  routine.
   * @param  None
@@ -383,6 +411,18 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    char temp;
+    
+    if(ring_buffer_dequeue(&uart_tx_ring_buf, &temp) > 0)
+    {
+        USART_SendData8(USART1, temp);
+    }
+    else
+    {
+        /* Disable the USART Transmit Complete interrupt */
+        USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+    }
+    USART_ClearITPendingBit(USART1, USART_IT_TC);
 }
 
 /**
@@ -395,6 +435,7 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
 }
 
 /**

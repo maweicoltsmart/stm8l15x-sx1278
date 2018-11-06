@@ -83,7 +83,7 @@
         </option>
         <option>
           <name>GenStackSize</name>
-          <state>0x100</state>
+          <state>0x300</state>
         </option>
         <option>
           <name>GenHeapSize</name>
@@ -131,7 +131,7 @@
         <debug>1</debug>
         <option>
           <name>IccRequirePrototypes</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IccLanguageConformance</name>
@@ -264,6 +264,9 @@
           <state>$PROJ_DIR$\..\..\..\Utilities\STM8_EVAL\STM8L1526_EVAL</state>
           <state>$PROJ_DIR$\..\..\..\Utilities\STM8_EVAL\Common</state>
           <state>$PROJ_DIR$\..\..\..\Utilities\Misc</state>
+          <state>$PROJ_DIR$\..\Radio\sx1276</state>
+          <state>$PROJ_DIR$\..\Radio</state>
+          <state>$PROJ_DIR$\..\System</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -585,7 +588,7 @@
         </option>
         <option>
           <name>IlinkMapFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkLogFile</name>
@@ -4904,6 +4907,72 @@
   </group>
   <group>
     <name>User</name>
+    <group>
+      <name>Radio</name>
+      <group>
+        <name>Board</name>
+        <file>
+          <name>$PROJ_DIR$\..\Radio\spi-board.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\Radio\sx1276-board.c</name>
+        </file>
+      </group>
+      <group>
+        <name>Sx1276</name>
+        <file>
+          <name>$PROJ_DIR$\..\Radio\sx1276\sx1276.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
+      <name>System</name>
+      <file>
+        <name>$PROJ_DIR$\..\System\board.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\cfg_parm.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\comport.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\config_mode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\delay.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\eeprom.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\lowpower_mode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\manufacture_parm.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\normal_mode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\ring_buf.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\system.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\test_mode.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\timer.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\utilities.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\System\wakeup_mode.c</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\main.c</name>
     </file>
