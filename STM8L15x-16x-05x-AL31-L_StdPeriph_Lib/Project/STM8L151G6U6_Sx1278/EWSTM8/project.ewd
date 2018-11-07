@@ -49,7 +49,7 @@
         </option>
         <option>
           <name>CSpyDDFFile</name>
-          <state>$TOOLKIT_DIR$\config\ddf\iostm8l152c6.ddf</state>
+          <state>$TOOLKIT_DIR$\config\ddf\iostm8l151g6.ddf</state>
         </option>
         <option>
           <name>CSpyEnableExtraOptions</name>
@@ -204,7 +204,7 @@
         </option>
         <option>
           <name>STlinkEraseMemory</name>
-          <state>0</state>
+          <state>1</state>
         </option>
       </data>
     </settings>

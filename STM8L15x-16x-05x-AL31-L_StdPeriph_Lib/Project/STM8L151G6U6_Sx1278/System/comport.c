@@ -12,13 +12,7 @@ void ComportInit(void)
     ring_buffer_init(&uart_tx_ring_buf);
     /* Enable USART clock */
     CLK_PeripheralClockConfig(CLK_Peripheral_USART1, ENABLE);
-
-    /* Configure USART Tx as alternate function push-pull  (software pull up)*/
-    GPIO_ExternalPullUpConfig(SX1278_TX_PORT, SX1278_TX_PIN, ENABLE);
-
-    /* Configure USART Rx as alternate function push-pull  (software pull up)*/
-    GPIO_ExternalPullUpConfig(SX1278_RX_PORT, SX1278_RX_PIN, ENABLE);
-
+    
     /* USART configuration */
     if((GetRunModePin() == En_Test_Mode) || (GetRunModePin() == En_Config_Mode))
     {
@@ -34,7 +28,23 @@ void ComportInit(void)
                   USART_WordLength_8b,
                   USART_StopBits_1,
                   cfg_parm_get_uart_parity(),
-                  (USART_Mode_TypeDef)(USART_Mode_Rx | USART_Mode_Tx));
+                  (USART_Mode_TypeDef)(USART_Mode_Tx | USART_Mode_Rx));
+        if(stTmpCfgParm.option.io_pushpull == 1)
+        {
+            /* Configure USART Tx as alternate function push-pull  (software pull up)*/
+            GPIO_ExternalPullUpConfig(SX1278_TX_PORT, SX1278_TX_PIN, ENABLE);
+
+            /* Configure USART Rx as alternate function push-pull  (software pull up)*/
+            GPIO_ExternalPullUpConfig(SX1278_RX_PORT, SX1278_RX_PIN, ENABLE);
+        }
+        else
+        {
+            /* Configure USART Tx as alternate function push-pull  (software pull up)*/
+            GPIO_ExternalPullUpConfig(SX1278_TX_PORT, SX1278_TX_PIN, DISABLE);
+
+            /* Configure USART Rx as alternate function push-pull  (software pull up)*/
+            GPIO_ExternalPullUpConfig(SX1278_RX_PORT, SX1278_RX_PIN, DISABLE);
+        }
     }
     /* Enable the USART Receive interrupt: this interrupt is generated when the USART
       receive data register is not empty */

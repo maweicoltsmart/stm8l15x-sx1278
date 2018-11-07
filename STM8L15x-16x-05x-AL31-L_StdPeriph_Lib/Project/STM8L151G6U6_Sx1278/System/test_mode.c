@@ -62,9 +62,13 @@ void TestModeOnRxError( void );
  */
 void TestModeOnRadioTxTimeout( void )
 {
+    static int channel = 0;
+    
     // Restarts continuous wave transmission when timeout expires
     printf("tx timeout!\r\n");
-    Radio.SetTxContinuousWave( RF_FREQUENCY, TX_OUTPUT_POWER, TX_TIMEOUT );
+    Radio.SetTxContinuousWave( 430000000 + channel * 5000000, TX_OUTPUT_POWER, 10 );
+    if(++ channel > 16)
+      channel = 0;
 }
 
 void TestModeOnTxDone( void )

@@ -1,57 +1,61 @@
 #include "cfg_parm.h"
+#include <string.h>
+#include <stdio.h>
 
 __eeprom st_cfg_pkg stNvCfgParm;
 st_cfg_pkg stTmpCfgParm;
 
 void cfg_parm_factory_reset(void)
 {
-    stNvCfgParm.addr_h = 0x00;
-    stNvCfgParm.addr_l = 0x00;
-    stNvCfgParm.channel.channelno = 0x17;
-    stNvCfgParm.dest_transmit = 0x00;
-    stNvCfgParm.fec = 1;
-    stNvCfgParm.io_pushpull = 1;
-    stNvCfgParm.radio_wakeup_time = 0x00;
-    stNvCfgParm.speed.radio_baud = 2;
-    stNvCfgParm.speed.uart_baud = 0x03;
-    stNvCfgParm.speed.uart_parity = 0x00; // 8n1
-    stNvCfgParm.tx_power = 0x00; // 20dbm
+    memset(&stTmpCfgParm,0,5);
+    stTmpCfgParm.addr_h = 0x00;
+    stTmpCfgParm.addr_l = 0x00;
+    stTmpCfgParm.speed.radio_baud = 2;
+    stTmpCfgParm.speed.uart_baud = 0x03;
+    stTmpCfgParm.speed.uart_parity = 0x00; // 8n1
+    stTmpCfgParm.channel.channelno = 0x17;
+    stTmpCfgParm.option.tx_power = 0x00; // 20dbm
+    stTmpCfgParm.option.fec = 1;
+    stTmpCfgParm.option.radio_wakeup_time = 0x00;
+    stTmpCfgParm.option.io_pushpull = 1;
+    stTmpCfgParm.option.dest_transmit = 0x00;
+    
+    
+    stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
+    stNvCfgParm.addr_l = stTmpCfgParm.addr_l;
+    stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
+    stNvCfgParm.channel.channel = stTmpCfgParm.channel.channel;
+    stNvCfgParm.option.option = stTmpCfgParm.option.option;
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
 
 void cfg_parm_restore(void)
 {
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
     stNvCfgParm.addr_l = stTmpCfgParm.addr_l;
-    stNvCfgParm.channel.channelno = stTmpCfgParm.channel.channelno;
-    stNvCfgParm.dest_transmit = stTmpCfgParm.dest_transmit;
-    stNvCfgParm.fec = stTmpCfgParm.fec;
-    stNvCfgParm.io_pushpull = stTmpCfgParm.io_pushpull;
-    stNvCfgParm.radio_wakeup_time = stTmpCfgParm.radio_wakeup_time;
-    stNvCfgParm.speed.radio_baud = stTmpCfgParm.speed.radio_baud;
-    stNvCfgParm.speed.uart_baud = stTmpCfgParm.speed.uart_baud;
-    stNvCfgParm.speed.uart_parity = stTmpCfgParm.speed.uart_parity; // 8n1
-    stNvCfgParm.tx_power = stTmpCfgParm.tx_power; // 20dbm
+    stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
+    stNvCfgParm.channel.channel = stTmpCfgParm.channel.channel;
+    stNvCfgParm.option.option = stTmpCfgParm.option.option;
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
 
 void cfg_parm_dump_to_ram(void)
 {
     stTmpCfgParm.addr_h = stNvCfgParm.addr_h;
     stTmpCfgParm.addr_l = stNvCfgParm.addr_l;
-    stTmpCfgParm.channel.channelno = stNvCfgParm.channel.channelno;
-    stTmpCfgParm.dest_transmit = stNvCfgParm.dest_transmit;
-    stTmpCfgParm.fec = stNvCfgParm.fec;
-    stTmpCfgParm.io_pushpull = stNvCfgParm.io_pushpull;
-    stTmpCfgParm.radio_wakeup_time = stNvCfgParm.radio_wakeup_time;
-    stTmpCfgParm.speed.radio_baud = stNvCfgParm.speed.radio_baud;
-    stTmpCfgParm.speed.uart_baud = stNvCfgParm.speed.uart_baud;
-    stTmpCfgParm.speed.uart_parity = stNvCfgParm.speed.uart_parity; // 8n1
-    stTmpCfgParm.tx_power = stNvCfgParm.tx_power; // 20dbm
+    stTmpCfgParm.speed.speed = stNvCfgParm.speed.speed;
+    stTmpCfgParm.channel.channel = stNvCfgParm.channel.channel;
+    stTmpCfgParm.option.option = stNvCfgParm.option.option;
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
+    //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
 
 uint8_t cfg_parm_get_tx_power(void)
 {
     uint8_t tx_power;
-    switch(stTmpCfgParm.tx_power)
+    switch(stTmpCfgParm.option.tx_power)
     {
         case 0:
           tx_power = 20;
@@ -111,7 +115,7 @@ uint32_t cfg_parm_get_uart_baud(void)
 USART_Parity_TypeDef cfg_parm_get_uart_parity(void)
 {
     USART_Parity_TypeDef parity ;
-    switch(stTmpCfgParm.tx_power)
+    switch(stTmpCfgParm.speed.uart_parity)
     {
         case 0:
           parity = USART_Parity_No;

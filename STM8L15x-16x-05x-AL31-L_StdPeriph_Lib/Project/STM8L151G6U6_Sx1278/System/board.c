@@ -75,7 +75,7 @@ Run_Mode_Type GetRunModePin(void)
       return En_Low_Power_Mode;
     else
       return En_Config_Mode;*/
-    return En_Test_Mode;
+    return En_Config_Mode;
 }
 
 void BoardInitMcu( void )
@@ -97,8 +97,15 @@ void BoardInitMcu( void )
     //RtcInit( );
     cfg_parm_dump_to_ram();
     ComportInit();
-    GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_High_Fast); // AUX mode output
-
+    if(stTmpCfgParm.option.io_pushpull == 1)
+    {
+        GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_High_Fast); // AUX mode output
+    }
+    else
+    {
+        GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_OD_HiZ_Fast); // AUX mode output
+    }
+    
     SpiInit( );
     SX1276IoInit( );
     InitRunModePin( );

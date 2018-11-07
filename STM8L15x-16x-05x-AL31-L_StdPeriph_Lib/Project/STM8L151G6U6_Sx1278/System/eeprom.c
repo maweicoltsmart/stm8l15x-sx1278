@@ -1,53 +1,61 @@
 #include "stm8l15x_flash.h"
 
-/*
-
-* The user must implement the three extern-declared functions be low
-
-* in order for the compiler to be able to automatically write to the
-
-* EEPROM memory when __eeprom variables are assigned to.
-
-*/
-
-/*
-
-* Wait for the last data EEPROM operation to finish. Return 0 if the
-
-* operation failed, otherwise non-zero. You may want to handle
-
-* errors here, since the utility functions below simply ignore
-
-* errors, aborting multi-write operations early.
-
-*/
-
-int __eeprom_wait_for_last_operation(void)
+void __eeprom_write_8(unsigned short addr_eep,unsigned char data)
 {
-    FLASH_Status_TypeDef status = FLASH_WaitForLastOperation(FLASH_MemType_Data);
-    return !!(status & ( FLASH_Status_Successful_Operation));
+  FLASH_WaitForLastOperation(FLASH_MemType_Data);  
+  FLASH_Unlock(FLASH_MemType_Data);
+  
+  FLASH_ProgramByte(addr_eep, data); 
+  
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  FLASH_Lock(FLASH_MemType_Data);  
+}
+void __eeprom_write_16(unsigned short addr_eep,unsigned short data)
+{
+  FLASH_WaitForLastOperation(FLASH_MemType_Data);  
+  FLASH_Unlock(FLASH_MemType_Data);
+  
+  FLASH_ProgramByte(addr_eep,   data/256); 
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  
+  FLASH_ProgramByte(addr_eep+1, data%256);
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  
+  FLASH_Lock(FLASH_MemType_Data);  
+}
+void __eeprom_write_32(unsigned short addr_eep,unsigned long data)
+{
+  FLASH_WaitForLastOperation(FLASH_MemType_Data);  
+  FLASH_Unlock(FLASH_MemType_Data);
+  
+  FLASH_ProgramByte(addr_eep,   (unsigned char)(data>>24)); 
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  
+  FLASH_ProgramByte(addr_eep+1, (unsigned char)(data>>16));
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  
+  FLASH_ProgramByte(addr_eep+2,   (unsigned char)(data>>8)); 
+  FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  
+  FLASH_ProgramByte(addr_eep+3, (unsigned char)(data>>0));
+  FLASH_WaitForLastOperation(FLASH_MemType_Data);
+  
+  FLASH_Lock(FLASH_MemType_Data);  
 }
 
-/*
-
-* Write one byte to the data EEPROM memory.
-
-*/
-
-void __eeprom_program_byte(unsigned char __near * dst, unsigned char v)
+void __eeprom_write_many(unsigned short addr_eep,unsigned short size,unsigned short dummy,unsigned short addr_ram)
 {
-    FLASH_ProgramByte((u32)dst, (u8)v);
-}
-
-/*
-
-* Write one 4-byte long word to the data EEPROM memory. The address
-
-* must be 4-byte aligned.
-
-*/
-
-void __eeprom_program_long(unsigned char __near * dst, unsigned long v)
-{
-    FLASH_ProgramWord((u32)dst, (u32)v);
+  
+  FLASH_WaitForLastOperation(FLASH_MemType_Data);  
+  FLASH_Unlock(FLASH_MemType_Data);
+  
+  for(unsigned short i=0;i<size;i++)
+  {
+     FLASH_ProgramByte(addr_eep+i,   *((unsigned char *)(addr_ram)+i)); 
+     FLASH_WaitForLastOperation(FLASH_MemType_Data); 
+  }
+  
+  
+  FLASH_Lock(FLASH_MemType_Data);  
+  
 }
