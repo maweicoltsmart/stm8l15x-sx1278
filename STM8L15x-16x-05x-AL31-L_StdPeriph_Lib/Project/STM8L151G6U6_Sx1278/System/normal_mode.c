@@ -67,7 +67,7 @@ void NormalModeOnRxError( void );
 
 void normal_mode_routin(void)
 {
-    char RadioTxBuffer[58];
+    static char RadioTxBuffer[58];
     uint8_t RadioTxLen = 0;
     TimerTime_t timestamp;
     // cfg gpio & radio    
@@ -100,13 +100,10 @@ void normal_mode_routin(void)
         }
         else
         {
-            if((RadioTxLen >= 58) || (TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()))
+            if((RadioTxLen >= 58) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
             {
-                if(RadioTxLen > 0)
-                {
-                    ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,RadioTxLen);
-                    Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
-                }
+                RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
+                Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
             }
         }
     }
@@ -123,11 +120,13 @@ void NormalModeOnTxDone( void )
 
 void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    char temp;
+    uint8_t temp = 0;
     Radio.Sleep( );
     ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
+    Radio.Rx( 0 );
     ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
     USART_SendData8(USART1, temp);
+    USART_ITConfig(USART1, USART_IT_TC, ENABLE);
     /*BufferSize = size;
     memcpy( Buffer, payload, BufferSize );
     RssiValue = rssi;
