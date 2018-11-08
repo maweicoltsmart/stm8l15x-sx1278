@@ -97,7 +97,7 @@ void BoardInitMcu( void )
     //RtcInit( );
     cfg_parm_dump_to_ram();
     ComportInit();
-    if(stTmpCfgParm.option.io_pushpull == 1)
+    if(stTmpCfgParm.option.optionbit.io_pushpull == 1)
     {
         GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_High_Fast); // AUX mode output
     }

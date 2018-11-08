@@ -422,7 +422,6 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
         /* Disable the USART Transmit Complete interrupt */
         USART_ITConfig(USART1, USART_IT_TC, DISABLE);
     }
-    
 }
 
 /**
@@ -436,6 +435,7 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28)
        it is recommended to set a breakpoint on the following instruction.
     */
     ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
+    USART_ClearITPendingBit(USART1, USART_IT_RXNE);
 }
 
 /**

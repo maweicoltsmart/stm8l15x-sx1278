@@ -80,7 +80,7 @@ void wakeup_mode_routin(void)
 
     Radio.Init( &WakeUpModeRadioEvents );
     //factory = 433000000;
-    Radio.SetChannel( stTmpCfgParm.channel.channelno * 1000000 + 410000000 );
+    Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
     Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,

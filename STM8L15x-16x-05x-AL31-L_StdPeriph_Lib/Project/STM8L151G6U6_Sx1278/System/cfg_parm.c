@@ -10,15 +10,15 @@ void cfg_parm_factory_reset(void)
     memset(&stTmpCfgParm,0,5);
     stTmpCfgParm.addr_h = 0x00;
     stTmpCfgParm.addr_l = 0x00;
-    stTmpCfgParm.speed.radio_baud = 2;
-    stTmpCfgParm.speed.uart_baud = 0x03;
-    stTmpCfgParm.speed.uart_parity = 0x00; // 8n1
-    stTmpCfgParm.channel.channelno = 0x17;
-    stTmpCfgParm.option.tx_power = 0x00; // 20dbm
-    stTmpCfgParm.option.fec = 1;
-    stTmpCfgParm.option.radio_wakeup_time = 0x00;
-    stTmpCfgParm.option.io_pushpull = 1;
-    stTmpCfgParm.option.dest_transmit = 0x00;
+    stTmpCfgParm.speed.speedbit.radio_baud = 2;
+    stTmpCfgParm.speed.speedbit.uart_baud = 0x03;
+    stTmpCfgParm.speed.speedbit.uart_parity = 0x00; // 8n1
+    stTmpCfgParm.channel.channelbit.channelno = 0x17;
+    stTmpCfgParm.option.optionbit.tx_power = 0x00; // 20dbm
+    stTmpCfgParm.option.optionbit.fec = 1;
+    stTmpCfgParm.option.optionbit.radio_wakeup_time = 0x00;
+    stTmpCfgParm.option.optionbit.io_pushpull = 1;
+    stTmpCfgParm.option.optionbit.dest_transmit = 0x00;
     
     
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
@@ -55,7 +55,7 @@ void cfg_parm_dump_to_ram(void)
 uint8_t cfg_parm_get_tx_power(void)
 {
     uint8_t tx_power;
-    switch(stTmpCfgParm.option.tx_power)
+    switch(stTmpCfgParm.option.optionbit.tx_power)
     {
         case 0:
           tx_power = 20;
@@ -79,7 +79,7 @@ uint8_t cfg_parm_get_tx_power(void)
 uint32_t cfg_parm_get_uart_baud(void)
 {
     uint32_t uart_baud;
-    switch(stTmpCfgParm.speed.uart_baud)
+    switch(stTmpCfgParm.speed.speedbit.uart_baud)
     {
         case 0:
           uart_baud = 1200;
@@ -115,7 +115,7 @@ uint32_t cfg_parm_get_uart_baud(void)
 USART_Parity_TypeDef cfg_parm_get_uart_parity(void)
 {
     USART_Parity_TypeDef parity ;
-    switch(stTmpCfgParm.speed.uart_parity)
+    switch(stTmpCfgParm.speed.speedbit.uart_parity)
     {
         case 0:
           parity = USART_Parity_No;

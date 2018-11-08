@@ -26,22 +26,28 @@ struct cfg_pkg{
     unsigned char addr_l;
     union{
         unsigned char speed;
-        unsigned char radio_baud:3; // 0x00 300; 0x01 1200; 0x02 2400; 0x03 4800; 0x04 9600; 0x05 19200; 0x06 19200; 0x07 19200
-        unsigned char uart_baud:3; // 0x00 1200; 0x01 2400; 0x02 4800; 0x03 9600; 0x04 19200; 0x05 38400; 0x06 57600; 0x07 115200
-        unsigned char uart_parity:2; // 0x00 8N1; 0x01 8O1; 0x02 8E1; 0x03 8N1
+        struct{
+            unsigned char radio_baud:3; // 0x00 300; 0x01 1200; 0x02 2400; 0x03 4800; 0x04 9600; 0x05 19200; 0x06 19200; 0x07 19200
+            unsigned char uart_baud:3; // 0x00 1200; 0x01 2400; 0x02 4800; 0x03 9600; 0x04 19200; 0x05 38400; 0x06 57600; 0x07 115200
+            unsigned char uart_parity:2; // 0x00 8N1; 0x01 8O1; 0x02 8E1; 0x03 8N1
+        }speedbit;
     }speed;
     union{
         unsigned char channel;
-        unsigned char channelno:5; // 对应（410MHz+CHAN * 1MHz），默认17H（433MHz） 
-        unsigned char reserved:3;
+        struct{
+            unsigned char channelno:5; // 对应（410MHz+CHAN * 1MHz），默认17H（433MHz） 
+            unsigned char reserved:3;
+        }channelbit;
     }channel;
     union{
         unsigned char option;
-        unsigned char tx_power:2; // 0x00 20dBm（默认）; 0x01 17dBm; 0x02 14dBm; 0x03 10dBm
-        unsigned char fec:1; // 0x00 关闭FEC纠错 ; 0x01 打开FEC纠错（默认）
-        unsigned char radio_wakeup_time:3; // 无线唤醒时间 ; 0x00 250ms（默认）; 0x01 500ms; 0x02 750ms; 0x03 1000ms; 0x04 1250ms; 0x05 1500ms; 0x06 1750ms; 0x07 2000ms
-        unsigned char io_pushpull:1; // IO 驱动方式（默认1）; 0: TXD、AUX开路输出，RXD开路输入; 1: TXD、AUX推挽输出，RXD上拉输入 
-        unsigned char dest_transmit:1; // 定点发送使能位（类MODBUS）0: 透明传输模式 ; 1: 定点传输模式,为1时，每个用户数据帧的前3个字节作为高、低地址、信道。发射时，模块改变自身地址和信道，完毕后，恢复原有设置。
+        struct{
+            unsigned char tx_power:2; // 0x00 20dBm（默认）; 0x01 17dBm; 0x02 14dBm; 0x03 10dBm
+            unsigned char fec:1; // 0x00 关闭FEC纠错 ; 0x01 打开FEC纠错（默认）
+            unsigned char radio_wakeup_time:3; // 无线唤醒时间 ; 0x00 250ms（默认）; 0x01 500ms; 0x02 750ms; 0x03 1000ms; 0x04 1250ms; 0x05 1500ms; 0x06 1750ms; 0x07 2000ms
+            unsigned char io_pushpull:1; // IO 驱动方式（默认1）; 0: TXD、AUX开路输出，RXD开路输入; 1: TXD、AUX推挽输出，RXD上拉输入 
+            unsigned char dest_transmit:1; // 定点发送使能位（类MODBUS）0: 透明传输模式 ; 1: 定点传输模式,为1时，每个用户数据帧的前3个字节作为高、低地址、信道。发射时，模块改变自身地址和信道，完毕后，恢复原有设置。
+        }optionbit;
     }option;
 };
 typedef struct cfg_pkg st_cfg_pkg;
