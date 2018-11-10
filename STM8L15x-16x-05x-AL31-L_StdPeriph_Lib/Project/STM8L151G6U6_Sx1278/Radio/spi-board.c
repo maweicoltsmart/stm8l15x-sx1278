@@ -25,6 +25,7 @@
 #include "spi-board.h"
 #include "stm8l15x_spi.h"
 #include "board.h"
+#include "system.h"
 
 void SpiInit( void )
 {
@@ -39,7 +40,7 @@ void SpiInit( void )
     GPIO_ExternalPullUpConfig(GPIOB, SPI_NSS_PIN | SPI_SCK_PIN| \
                               SPI_MOSI_PIN | SPI_MISO_PIN, ENABLE);
     /* SX1278_SPI Config */
-    SPI_Init(SPI1, SPI_FirstBit_MSB, SPI_BaudRatePrescaler_16, SPI_Mode_Master,
+    SPI_Init(SPI1, SPI_FirstBit_MSB, SPI_BaudRatePrescaler_2, SPI_Mode_Master,
              SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_Direction_2Lines_FullDuplex,
              SPI_NSS_Soft, 0x07);
 
@@ -58,6 +59,9 @@ void SpiDeInit( void )
 
 uint16_t SpiInOut( uint16_t outData )
 {
+    uint16_t result;
+    
+    BoardDisableIrq();
     /* Loop while DR register in not emplty */
     while (SPI_GetFlagStatus(SPI1, SPI_FLAG_TXE) == RESET);
 
@@ -68,5 +72,7 @@ uint16_t SpiInOut( uint16_t outData )
     while (SPI_GetFlagStatus(SPI1, SPI_FLAG_RXNE) == RESET);
 
     /* Return the byte read from the SPI bus */
-    return SPI_ReceiveData(SPI1);
+    result = SPI_ReceiveData(SPI1);
+    BoardEnableIrq();
+    return result;
 }

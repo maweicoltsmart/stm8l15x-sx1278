@@ -77,20 +77,21 @@ void normal_mode_routin(void)
     NormalModeRadioEvents.TxTimeout = NormalModeOnTxTimeout;
     NormalModeRadioEvents.RxTimeout = NormalModeOnRxTimeout;
     NormalModeRadioEvents.RxError = NormalModeOnRxError;
-
+    BoardDisableIrq();
     Radio.Init( &NormalModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
     Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
 
     Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
+                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
     Radio.Rx( 0 ); // 0: receive RxContinuous
+    BoardEnableIrq();
     while(GetRunModePin() == En_Normal_Mode)
     {
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))
@@ -103,7 +104,9 @@ void normal_mode_routin(void)
             if((RadioTxLen >= 58) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
             {
                 RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
+                BoardDisableIrq();
                 Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
+                BoardEnableIrq();
             }
         }
     }
@@ -120,7 +123,7 @@ void NormalModeOnTxDone( void )
 
 void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    uint8_t temp = 0;
+    char temp = 0;
     Radio.Sleep( );
     ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
     Radio.Rx( 0 );

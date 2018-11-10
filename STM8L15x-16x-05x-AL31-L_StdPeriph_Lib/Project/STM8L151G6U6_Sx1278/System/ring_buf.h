@@ -1,4 +1,5 @@
 #include "stm8l15x.h"
+#include "system.h"
 
 /**
  * @file
@@ -14,7 +15,7 @@
  * can be contained in the buffer.
  * The buffer size must be a power of two.
 */
-#define RING_BUFFER_SIZE 128 * 1
+#define RING_BUFFER_SIZE 128 * 2
 
 #if (RING_BUFFER_SIZE & (RING_BUFFER_SIZE - 1)) != 0
 #error "RING_BUFFER_SIZE must be a power of two"
@@ -108,7 +109,11 @@ uint8_t ring_buffer_peek(ring_buffer_t *buffer, char *data, ring_buffer_size_t i
  * @return 1 if empty; 0 otherwise.
  */
 inline uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
-  return (buffer->head_index == buffer->tail_index);
+  uint8_t result;
+  BoardDisableIrq();
+  result = (buffer->head_index == buffer->tail_index);
+  BoardEnableIrq();
+  return result;
 }
 
 /**
@@ -117,7 +122,11 @@ inline uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
  * @return 1 if full; 0 otherwise.
  */
 inline uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
-  return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK) == RING_BUFFER_MASK;
+  uint8_t result;
+  BoardDisableIrq();
+  result = (((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK) == RING_BUFFER_MASK);
+  BoardEnableIrq();
+  return result;
 }
 
 /**
@@ -126,7 +135,11 @@ inline uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
  * @return The number of items in the ring buffer.
  */
 inline ring_buffer_size_t ring_buffer_num_items(ring_buffer_t *buffer) {
-  return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
+  uint8_t result;
+  BoardDisableIrq();
+  result = ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
+  BoardEnableIrq();
+  return result;
 }
 
 #endif /* RINGBUFFER_H */

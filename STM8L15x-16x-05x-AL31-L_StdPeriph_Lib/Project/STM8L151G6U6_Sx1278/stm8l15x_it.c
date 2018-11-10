@@ -434,8 +434,8 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
     USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+    ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
 }
 
 /**
