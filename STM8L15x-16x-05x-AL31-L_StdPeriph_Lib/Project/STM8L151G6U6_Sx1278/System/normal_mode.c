@@ -127,14 +127,12 @@ void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t s
     Radio.Sleep( );
     ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
     Radio.Rx( 0 );
-    ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
-    USART_SendData8(USART1, temp);
-    USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-    /*BufferSize = size;
-    memcpy( Buffer, payload, BufferSize );
-    RssiValue = rssi;
-    SnrValue = snr;*/
-    NormalModeState = RX;
+    if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
+    {
+        ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
+        USART_SendData8(USART1, temp);
+        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+    }
 }
 
 void NormalModeOnTxTimeout( void )

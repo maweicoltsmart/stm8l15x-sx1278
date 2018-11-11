@@ -32,6 +32,8 @@
 #include "ring_buf.h"
 #include "delay.h"
 #include "board.h"
+#include "sx1276-board.h"
+#include <stdio.h>
 
 /** @addtogroup STM8L15x_StdPeriph_Template
   * @{
@@ -117,6 +119,10 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
+    /* Clear the periodic wakeup unit flag */
+    RTC_ClearITPendingBit(RTC_IT_WUT);
+    Radio.StartCad();
+    //printf("cad\r\n");
 }
 /**
   * @brief External IT PORTE/F and PVD Interrupt routine.
@@ -413,14 +419,17 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
     */
     char temp;
     USART_ClearITPendingBit(USART1, USART_IT_TC);
-    if(ring_buffer_dequeue(&uart_tx_ring_buf, &temp) > 0)
+    if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
     {
-        USART_SendData8(USART1, temp);
-    }
-    else
-    {
-        /* Disable the USART Transmit Complete interrupt */
-        USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+        if(ring_buffer_dequeue(&uart_tx_ring_buf, &temp) > 0)
+        {
+            USART_SendData8(USART1, temp);
+        }
+        else
+        {
+            /* Disable the USART Transmit Complete interrupt */
+            USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+        }
     }
 }
 

@@ -84,5 +84,5 @@ typedef enum{
 
 void BoardInitMcu( void );
 Run_Mode_Type GetRunModePin(void);
-
+void RTC_Config(void);
 #endif

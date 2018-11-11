@@ -14,6 +14,25 @@
 #define TIM4_PERIOD       124
 __IO uint32_t TimingDelay;
 
+void RTC_Config(void)
+{
+  /* Enable RTC clock */
+  CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);
+  /* Wait for LSI clock to be ready */
+  //while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);
+  /* wait for 1 second for the LSE Stabilisation */
+  //LSI_StabTime();
+  CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);
+
+  /* Configures the RTC wakeup timer_step = RTCCLK/16 = LSE/16 = 488.28125 us */
+  RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div16);
+
+  /* Enable wake up unit Interrupt */
+  RTC_ITConfig(RTC_IT_WUT, ENABLE);
+  /* Enable general Interrupt*/
+  //enableInterrupts();
+}
+
 static void TIM4_Config(void)
 {
   /* TIM4 configuration:
@@ -75,7 +94,7 @@ Run_Mode_Type GetRunModePin(void)
       return En_Low_Power_Mode;
     else
       return En_Config_Mode;*/
-    return En_Config_Mode;
+    return En_Normal_Mode;
 }
 
 void BoardInitMcu( void )
@@ -95,6 +114,7 @@ void BoardInitMcu( void )
     //TimingDelay_Init();
     TIM4_Config( );
     //RtcInit( );
+    cfg_parm_factory_reset();
     cfg_parm_dump_to_ram();
     ComportInit();
     if(stTmpCfgParm.option.optionbit.io_pushpull == 1)
