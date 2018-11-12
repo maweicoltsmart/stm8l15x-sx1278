@@ -135,3 +135,39 @@ USART_Parity_TypeDef cfg_parm_get_uart_parity(void)
     }
     return parity;
 }
+
+uint16_t cfg_parm_get_air_baud(void)
+{
+    uint16_t airbaud ;
+    switch(stTmpCfgParm.speed.speedbit.radio_baud)
+    {
+        case 0:
+          airbaud = 300; // 125k sf = 12
+          break;
+        case 1:
+          airbaud = 1200; // 250k sf = 
+          break;
+        case 2:
+          airbaud = 2400; // 500k sf = 
+          break;
+        case 3:
+          airbaud = 4800; // 250k sf = 
+          break;
+        case 4:
+          airbaud = 9600; // 500k sf = 
+          break;
+        case 5:
+          airbaud = 19200; // 500k sf = 
+          break;
+        case 6:
+          airbaud = 19200; // 500k sf = 
+          break;
+        case 7:
+          airbaud = 19200; // 500k sf = 
+          break;
+        default:
+          airbaud = 2400;
+          break;
+    }
+    return airbaud;
+}

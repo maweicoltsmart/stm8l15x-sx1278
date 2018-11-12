@@ -4,20 +4,21 @@
 #include "comport.h"
 #include "timer.h"
 #include "cfg_parm.h"
+#include <stdio.h>
 
 #define RF_FREQUENCY                                470000000 // Hz
 #define TX_OUTPUT_POWER                             14        // dBm
 
-#define LORA_BANDWIDTH                              2         // [0: 125 kHz,
+#define LORA_BANDWIDTH                              1         // [0: 125 kHz,
                                                               //  1: 250 kHz,
                                                               //  2: 500 kHz,
                                                               //  3: Reserved]
-#define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
+#define LORA_SPREADING_FACTOR                       12         // [SF7..SF12]
 #define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
                                                               //  3: 4/7,
                                                               //  4: 4/8]
-#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
+#define LORA_PREAMBLE_LENGTH                        100         // Same for Tx and Rx
 #define LORA_SYMBOL_TIMEOUT                         0         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
@@ -103,9 +104,19 @@ void normal_mode_routin(void)
         {
             if((RadioTxLen >= 58) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
             {
-                RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
                 BoardDisableIrq();
-                Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
+                if(Radio.GetStatus() != RF_TX_RUNNING)
+                {
+                    RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
+                    //BoardDisableIrq();
+                    Radio.Sleep( );
+                    Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
+                    /*for(int i = 0;i < RadioTxLen;i ++)
+                    {
+                        putchar(RadioTxBuffer[i]);
+                    }*/
+                    //BoardEnableIrq();
+                }
                 BoardEnableIrq();
             }
         }
@@ -124,8 +135,9 @@ void NormalModeOnTxDone( void )
 void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
     char temp = 0;
-    Radio.Sleep( );
+    
     ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
+    Radio.Sleep( );
     Radio.Rx( 0 );
     if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
     {
@@ -140,6 +152,7 @@ void NormalModeOnTxTimeout( void )
     Radio.Sleep( );
     Radio.Rx( 0 );
     NormalModeState = TX_TIMEOUT;
+    printf("txtimeout\r\n");
 }
 
 void NormalModeOnRxTimeout( void )

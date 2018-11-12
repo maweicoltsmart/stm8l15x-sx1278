@@ -62,5 +62,6 @@ void cfg_parm_dump_to_ram(void);
 uint8_t cfg_parm_get_tx_power(void);
 uint32_t cfg_parm_get_uart_baud(void);
 USART_Parity_TypeDef cfg_parm_get_uart_parity(void);
+uint16_t cfg_parm_get_air_baud(void);
 
 #endif
