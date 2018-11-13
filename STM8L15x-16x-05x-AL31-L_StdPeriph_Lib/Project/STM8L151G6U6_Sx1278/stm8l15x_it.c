@@ -122,7 +122,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
     /* Clear the periodic wakeup unit flag */
     RTC_ClearITPendingBit(RTC_IT_WUT);
     Radio.StartCad();
-    //printf("cad\r\n");
+    halt();
 }
 /**
   * @brief External IT PORTE/F and PVD Interrupt routine.
@@ -392,7 +392,6 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler,25)
     */
     /* Cleat Interrupt Pending bit */
     TIM4_ClearITPendingBit(TIM4_IT_Update);
-    //TimingDelay_Decrement();
     SysTick_Handler();
 }
 /**

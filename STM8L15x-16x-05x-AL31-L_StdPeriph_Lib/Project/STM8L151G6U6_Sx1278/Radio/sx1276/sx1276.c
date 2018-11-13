@@ -242,7 +242,7 @@ void SX1276Init( RadioEvents_t *events )
 
     SX1276SetOpMode( RF_OPMODE_SLEEP );
 
-    SX1276IoIrqInit( );
+    //SX1276IoIrqInit( );
 
     for( i = 0; i < sizeof( RadioRegsInit ) / sizeof( RadioRegisters_t ); i++ )
     {
@@ -251,7 +251,7 @@ void SX1276Init( RadioEvents_t *events )
     }
 
     SX1276SetModem( MODEM_FSK );
-    //SX1276IoIrqInit( );
+    SX1276IoIrqInit( );
     SX1276.Settings.State = RF_IDLE;
 }
 

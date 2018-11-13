@@ -171,3 +171,39 @@ uint16_t cfg_parm_get_air_baud(void)
     }
     return airbaud;
 }
+
+uint16_t cfg_parm_get_wakeup_time(void)
+{
+    uint16_t wakeuptime ;
+    switch(stTmpCfgParm.option.optionbit.radio_wakeup_time)
+    {
+        case 0:
+          wakeuptime = 250;
+          break;
+        case 1:
+          wakeuptime = 500;
+          break;
+        case 2:
+          wakeuptime = 750;
+          break;
+        case 3:
+          wakeuptime = 1000;
+          break;
+        case 4:
+          wakeuptime = 1250;
+          break;
+        case 5:
+          wakeuptime = 1500;
+          break;
+        case 6:
+          wakeuptime = 1750;
+          break;
+        case 7:
+          wakeuptime = 2000;
+          break;
+        default:
+          wakeuptime = 250;
+          break;
+    }
+    return wakeuptime;
+}

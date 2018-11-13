@@ -69,6 +69,7 @@ void LowPowerModeOnCadDone( bool channelActivityDetected );
 
 void lowpower_mode_routin(void)
 {
+    PWR_UltraLowPowerCmd(ENABLE);
     // cfg gpio & radio    
     // Radio initialization
     LowPowerModeRadioEvents.TxDone = LowPowerModeOnTxDone;
@@ -90,15 +91,17 @@ void lowpower_mode_routin(void)
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, true, 8, LORA_IQ_INVERSION_ON, true );
-    BoardEnableIrq();
-    BEEP_Cmd(DISABLE);
-    BEEP_LSClockToTIMConnectCmd(ENABLE);
-    BEEP_LSICalibrationConfig(32768);
+    Radio.Sleep( );
+    Radio.Rx( 0 );
+    Radio.Sleep( );
     /* RTC configuration -------------------------------------------*/
     RTC_Config();
-    RTC_SetWakeUpCounter(1023);
+    RTC_WakeUpCmd(DISABLE);
+    RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
-    //Radio.Rx( 0 ); // 0: receive RxContinuous
+    CLK_LSICmd(ENABLE);
+    BoardEnableIrq();
+    
     while(GetRunModePin() == En_Low_Power_Mode)
     {
         RadioState_t rfstatus;
@@ -108,10 +111,9 @@ void lowpower_mode_routin(void)
         if((rfstatus == RF_IDLE) && (ring_buffer_is_empty(&uart_tx_ring_buf)) && (USART_GetFlagStatus(USART1,USART_FLAG_TXE) == SET) && (USART_GetFlagStatus(USART1,USART_FLAG_TC) == SET))
         {
             BoardDisableIrq();
+            
             /* Enter Wait for interrupt mode*/
             Radio.Sleep( );
-            PWR_UltraLowPowerCmd(ENABLE);
-            //printf("sleep\r\n");
             BoardEnableIrq();
             halt();
             
@@ -142,7 +144,7 @@ void LowPowerModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t
         USART_ITConfig(USART1, USART_IT_TC, ENABLE);
     }
     RTC_WakeUpCmd(DISABLE);
-    RTC_SetWakeUpCounter(1023);
+    RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
 }
 
@@ -157,7 +159,7 @@ void LowPowerModeOnRxTimeout( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
-    RTC_SetWakeUpCounter(1023);
+    RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );
     LowPowerModeState = RX_TIMEOUT;
@@ -167,7 +169,7 @@ void LowPowerModeOnRxError( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
-    RTC_SetWakeUpCounter(1023);
+    RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );
     LowPowerModeState = RX_ERROR;
@@ -176,15 +178,14 @@ void LowPowerModeOnRxError( void )
 void LowPowerModeOnCadDone( bool channelActivityDetected )
 {
     Radio.Sleep( );
-    printf("cadone\r\n");
     if(channelActivityDetected)
     {
-        printf("rx\r\n");
         RTC_WakeUpCmd(DISABLE);
+        printf("rx\r\n");
         Radio.Rx( 1000 );
     }
     else
     {
-        Radio.Sleep( );
+        halt();
     }
 }
