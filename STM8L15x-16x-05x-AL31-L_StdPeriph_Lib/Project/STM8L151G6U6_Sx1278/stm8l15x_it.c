@@ -208,7 +208,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     uint8_t bit = 0;
 
     EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
-    GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_FL_No_IT); // UART RX
+    GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_No_IT); // UART RX
     if(GetRunModePin() == En_Config_Mode)
     {
         byte = 0;
@@ -231,7 +231,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
             }
         }
         //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
-        GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_FL_IT); // UART RX
+        GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
         //EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
     }
     else

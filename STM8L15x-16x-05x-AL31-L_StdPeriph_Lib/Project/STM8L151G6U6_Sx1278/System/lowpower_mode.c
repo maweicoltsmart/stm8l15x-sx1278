@@ -82,12 +82,12 @@ void lowpower_mode_routin(void)
     Radio.Init( &LowPowerModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, LORA_BANDWIDTH,
-                                   LORA_SPREADING_FACTOR, LORA_CODINGRATE,
+    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
+                                   cfg_parm_get_air_sf(), LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
 
-    Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
+    Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, true, 8, LORA_IQ_INVERSION_ON, true );
@@ -119,8 +119,6 @@ void lowpower_mode_routin(void)
             
         }
     }
-    // reset mcu and get run mode again
-    WWDG->CR = 0x80;//WDGA=1执行这一句后，无条件软复位
 }
 
 void LowPowerModeOnTxDone( void )

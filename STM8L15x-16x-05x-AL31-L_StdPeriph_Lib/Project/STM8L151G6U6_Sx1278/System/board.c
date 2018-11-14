@@ -93,12 +93,12 @@ void BoardInitMcu( void )
     GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
     GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_No_IT); // M0 mode input
     GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_No_IT); // M1 mode input
-    GPIO_Init(SX1278_IO6_PORT, SX1278_IO6_PIN, GPIO_Mode_Out_PP_High_Fast); // IO6
-    GPIO_Init(SX1278_IO5_PORT, SX1278_IO5_PIN, GPIO_Mode_Out_PP_High_Fast); // IO5
-    GPIO_Init(SX1278_IO4_PORT, SX1278_IO4_PIN, GPIO_Mode_Out_PP_High_Fast); // IO4
-    GPIO_Init(SX1278_IO3_PORT, SX1278_IO3_PIN, GPIO_Mode_Out_PP_High_Fast); // IO3
-    GPIO_Init(SX1278_IO2_PORT, SX1278_IO2_PIN, GPIO_Mode_Out_PP_High_Fast); // IO2
-    GPIO_Init(SX1278_IO1_PORT, SX1278_IO1_PIN, GPIO_Mode_Out_PP_High_Fast); // IO1
+    GPIO_Init(SX1278_IO6_PORT, SX1278_IO6_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO6
+    GPIO_Init(SX1278_IO5_PORT, SX1278_IO5_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO5
+    GPIO_Init(SX1278_IO4_PORT, SX1278_IO4_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO4
+    GPIO_Init(SX1278_IO3_PORT, SX1278_IO3_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO3
+    GPIO_Init(SX1278_IO2_PORT, SX1278_IO2_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO2
+    GPIO_Init(SX1278_IO1_PORT, SX1278_IO1_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO1
     cfg_parm_factory_reset();
     cfg_parm_dump_to_ram();
     ComportInit();

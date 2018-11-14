@@ -172,6 +172,84 @@ uint16_t cfg_parm_get_air_baud(void)
     return airbaud;
 }
 
+uint8_t cfg_parm_get_air_bandwith(void)
+{
+    uint16_t bandwith ;
+    //  0: 125 kHz,
+    //  1: 250 kHz,
+    //  2: 500 kHz,
+    switch(stTmpCfgParm.speed.speedbit.radio_baud)
+    {
+        case 0:
+          bandwith = 0; // 125k
+          break;
+        case 1:
+          bandwith = 1; // 250k
+          break;
+        case 2:
+          bandwith = 2; // 500k
+          break;
+        case 3:
+          bandwith = 1; // 250k
+          break;
+        case 4:
+          bandwith = 2; // 500k
+          break;
+        case 5:
+          bandwith = 2; // 500k
+          break;
+        case 6:
+          bandwith = 2; // 500k
+          break;
+        case 7:
+          bandwith = 2; // 500k
+          break;
+        default:
+          bandwith = 2400;
+          break;
+    }
+    return bandwith;
+}
+
+uint8_t cfg_parm_get_air_sf(void)
+{
+    uint16_t sf ;
+    //  0: 125 kHz,
+    //  1: 250 kHz,
+    //  2: 500 kHz,
+    switch(stTmpCfgParm.speed.speedbit.radio_baud)
+    {
+        case 0:
+          sf = 0; // 125k
+          break;
+        case 1:
+          sf = 1; // 250k
+          break;
+        case 2:
+          sf = 2; // 500k
+          break;
+        case 3:
+          sf = 1; // 250k
+          break;
+        case 4:
+          sf = 2; // 500k
+          break;
+        case 5:
+          sf = 2; // 500k
+          break;
+        case 6:
+          sf = 2; // 500k
+          break;
+        case 7:
+          sf = 2; // 500k
+          break;
+        default:
+          sf = 2400;
+          break;
+    }
+    return sf;
+}
+
 uint16_t cfg_parm_get_wakeup_time(void)
 {
     uint16_t wakeuptime ;

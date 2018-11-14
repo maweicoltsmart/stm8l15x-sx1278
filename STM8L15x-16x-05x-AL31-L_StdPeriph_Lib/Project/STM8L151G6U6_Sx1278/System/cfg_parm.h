@@ -64,5 +64,7 @@ uint32_t cfg_parm_get_uart_baud(void);
 USART_Parity_TypeDef cfg_parm_get_uart_parity(void);
 uint16_t cfg_parm_get_air_baud(void);
 uint16_t cfg_parm_get_wakeup_time(void);
+uint8_t cfg_parm_get_air_bandwith(void);
+uint8_t cfg_parm_get_air_sf(void);
 
 #endif
