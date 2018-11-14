@@ -39,6 +39,8 @@ void DelayS( float s );
  * Blocking delay of "ms" milliseconds
  */
 void DelayMs( uint32_t ms );
+void delay_us(u16 n_us);
+
 
 #endif // __DELAY_H__
 

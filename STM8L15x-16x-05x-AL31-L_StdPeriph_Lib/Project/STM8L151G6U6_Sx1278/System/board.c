@@ -73,7 +73,7 @@ Run_Mode_Type GetRunModePin(void)
       return En_Low_Power_Mode;
     else
       return En_Config_Mode;*/
-    return En_Low_Power_Mode;
+    return En_Config_Mode;
 }
 
 void BoardInitMcu( void )

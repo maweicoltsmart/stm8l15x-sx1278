@@ -122,3 +122,36 @@ void DelayMs( uint32_t ms )
     //Delay(ms);
     for(int16_t i = 0;i < 2200;i ++);
 }
+
+void delay_us(u16 n_us)
+{
+/* Init TIMER 4 */
+  CLK_PeripheralClockConfig(CLK_Peripheral_TIM2, ENABLE);
+
+/* prescaler: / (2^0) = /1 */
+  TIM2->PSCR = 0;
+
+/* SYS_CLK_HSI_DIV1 Auto-Reload value: 16M / 1 = 16M, 16M / 100k = 160 */
+  TIM2->ARRH = 0;
+  TIM2->ARRL = 16;
+
+/* Counter value: 10, to compensate the initialization of TIMER */
+  TIM2->CNTRH = 0;
+  TIM2->CNTRL = 10;
+
+/* clear update flag */
+  TIM2->SR1 &= ~TIM_SR1_UIF;
+
+/* Enable Counter */
+  TIM2->CR1 |= TIM_CR1_CEN;
+
+  while(n_us--)
+  {
+    while((TIM2->SR1 & TIM_SR1_UIF) == 0) ;
+    TIM2->SR1 &= ~TIM_SR1_UIF;
+  }
+
+/* Disable Counter */
+  TIM2->CR1 &= ~TIM_CR1_CEN;
+  CLK_PeripheralClockConfig(CLK_Peripheral_TIM2, DISABLE);
+}
