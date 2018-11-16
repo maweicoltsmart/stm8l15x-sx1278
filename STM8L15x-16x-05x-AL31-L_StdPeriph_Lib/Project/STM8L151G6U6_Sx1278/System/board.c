@@ -57,23 +57,23 @@ void TIM4_Config(void)
 void InitRunModePin(void)
 {
     GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
-    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_No_IT); // M0 mode input
-    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_No_IT); // M1 mode input
+    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_PU_No_IT); // M0 mode input
+    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_PU_No_IT); // M1 mode input
 }
 
 Run_Mode_Type GetRunModePin(void)
-{/*
-    if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN) == 1)
+{
+    if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN))
       return En_Test_Mode;
     else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Normal_Mode;
-    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 1) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
+    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN)) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Wake_Up_Mode;
-    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 1))
+    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN)))
       return En_Low_Power_Mode;
     else
-      return En_Config_Mode;*/
-    return En_Config_Mode;
+      return En_Config_Mode;
+    //return En_Low_Power_Mode;
 }
 
 void BoardInitMcu( void )
@@ -90,9 +90,7 @@ void BoardInitMcu( void )
     GPIO_DeInit(GPIOB);
     GPIO_DeInit(GPIOC);
     GPIO_DeInit(GPIOD);
-    GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
-    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_No_IT); // M0 mode input
-    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_No_IT); // M1 mode input
+    InitRunModePin();
     GPIO_Init(SX1278_IO6_PORT, SX1278_IO6_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO6
     GPIO_Init(SX1278_IO5_PORT, SX1278_IO5_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO5
     GPIO_Init(SX1278_IO4_PORT, SX1278_IO4_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO4

@@ -17,7 +17,6 @@
 #define GETCHAR_PROTOTYPE int getchar (void)
 #endif /* _RAISONANCE_ */
 
-#define RF_FREQUENCY                                433000000 // Hz
 #define TX_OUTPUT_POWER                             20        // 20 dBm
 #define TX_TIMEOUT                                  65535     // seconds (MAX value)
 #define RX_TIMEOUT                                  65535     // seconds (MAX value)

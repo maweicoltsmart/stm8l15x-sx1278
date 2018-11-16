@@ -6,19 +6,11 @@
 #include "cfg_parm.h"
 #include <stdio.h>
 
-#define RF_FREQUENCY                                433000000 // Hz
-#define TX_OUTPUT_POWER                             20        // dBm
-
-#define LORA_BANDWIDTH                              1         // [0: 125 kHz,
-                                                              //  1: 250 kHz,
-                                                              //  2: 500 kHz,
-                                                              //  3: Reserved]
-#define LORA_SPREADING_FACTOR                       12         // [SF7..SF12]
 #define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
                                                               //  3: 4/7,
                                                               //  4: 4/8]
-#define LORA_PREAMBLE_LENGTH                        100         // Same for Tx and Rx
+#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
 #define LORA_SYMBOL_TIMEOUT                         0         // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
@@ -67,6 +59,22 @@ void LowPowerModeOnRxError( void );
 
 void LowPowerModeOnCadDone( bool channelActivityDetected );
 
+static void SetTxCfg(void)
+{
+    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
+                                   cfg_parm_get_air_sf(), LORA_CODINGRATE,
+                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
+}
+
+static void SetRxCfg(void)
+{
+    Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
+                                   LORA_CODINGRATE, 0, (uint16_t)(cfg_parm_get_air_baud() * (cfg_parm_get_wakeup_time() / 1000.0) + 3 + 8 + cfg_parm_get_air_baud() * 0.005),
+                                   (uint16_t)(cfg_parm_get_air_baud() * (cfg_parm_get_wakeup_time() / 1000.0) + 3 + 8 + cfg_parm_get_air_baud() * 0.005), LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
+}
+
 void lowpower_mode_routin(void)
 {
     PWR_UltraLowPowerCmd(ENABLE);
@@ -82,15 +90,8 @@ void lowpower_mode_routin(void)
     Radio.Init( &LowPowerModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
-                                   cfg_parm_get_air_sf(), LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
-
-    Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
+    SetTxCfg();
+    SetRxCfg();
     Radio.Sleep( );
     Radio.Rx( 0 );
     Radio.Sleep( );
@@ -100,6 +101,8 @@ void lowpower_mode_routin(void)
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     CLK_LSICmd(ENABLE);
+    SetTxCfg();
+    SetRxCfg();
     BoardEnableIrq();
     
     while(GetRunModePin() == En_Low_Power_Mode)
@@ -131,7 +134,7 @@ void LowPowerModeOnTxDone( void )
 void LowPowerModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
     char temp = 0;
-    
+    //printf("rxdone\r\n");
     ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
     Radio.Sleep( );
     //Radio.Rx( 0 );
@@ -157,6 +160,7 @@ void LowPowerModeOnRxTimeout( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
+    printf("rxtimeout\r\n");
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );
@@ -167,6 +171,7 @@ void LowPowerModeOnRxError( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
+    printf("rxerror\r\n");
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );
@@ -176,11 +181,12 @@ void LowPowerModeOnRxError( void )
 void LowPowerModeOnCadDone( bool channelActivityDetected )
 {
     Radio.Sleep( );
+    //printf("cadone\r\n");
     if(channelActivityDetected)
     {
         RTC_WakeUpCmd(DISABLE);
-        printf("rx\r\n");
-        Radio.Rx( 1000 );
+        //printf("rx\r\n");
+        Radio.Rx( 0 );
     }
     else
     {

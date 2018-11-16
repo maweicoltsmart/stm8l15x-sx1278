@@ -40,7 +40,7 @@ void config_mode_routin(void)
     GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_FL_IT); // UART RX
     BoardEnableIrq();
     // cfg gpio & radio
-    GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
+    //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_Low_Fast); // AUX mode output
     while(GetRunModePin() == En_Config_Mode)
     {
