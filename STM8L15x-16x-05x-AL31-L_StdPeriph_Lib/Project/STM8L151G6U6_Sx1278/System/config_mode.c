@@ -45,16 +45,18 @@ void config_mode_routin(void)
     while(GetRunModePin() == En_Config_Mode)
     {
         halt();
-        if(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
+        while(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
         {
             ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
             switch(cmdbyte)
             {
               case 0xC0: // 掉电记忆
               case 0xC2: // 掉电不保存
-                while(ring_buffer_num_items(&uart_rx_ring_buf) < 5)
+                DelayMs(10);
+                if(ring_buffer_num_items(&uart_rx_ring_buf) < 5)
                 {
-                    halt();
+                    break;
+                    //halt();
                 }
                 ring_buffer_dequeue_arr(&uart_rx_ring_buf,cmdbuf,5);
                 stTmpCfgParm.addr_h = cmdbuf[0];
@@ -73,9 +75,11 @@ void config_mode_routin(void)
                 }
                 break;
               case 0xC1:
-                while(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
+                DelayMs(10);
+                if(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
                 {
-                    halt();
+                    break;
+                    //halt();
                 }
                 ring_buffer_dequeue_arr(&uart_rx_ring_buf,cmdbuf,2);
                 if((cmdbuf[0] == 0xC1) && (cmdbuf[1] == 0xC1))
@@ -93,9 +97,11 @@ void config_mode_routin(void)
                 }
                 break;
               case 0xC3:
-                while(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
+                DelayMs(10);
+                if(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
                 {
-                    halt();
+                    break;
+                    //halt();
                 }
                 ring_buffer_dequeue_arr(&uart_rx_ring_buf,cmdbuf,2);
                 if((cmdbuf[0] == 0xC3) && (cmdbuf[1] == 0xC3))
@@ -111,9 +117,11 @@ void config_mode_routin(void)
                 }
                 break;
               case 0xC4:
-                while(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
+                DelayMs(10);
+                if(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
                 {
-                    halt();
+                    break;
+                    //halt();
                 }
                 ring_buffer_dequeue_arr(&uart_rx_ring_buf,cmdbuf,2);
                 if((cmdbuf[0] == 0xC4) && (cmdbuf[1] == 0xC4))
