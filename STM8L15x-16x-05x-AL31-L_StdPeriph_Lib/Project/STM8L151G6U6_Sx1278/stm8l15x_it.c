@@ -213,7 +213,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     {
         byte = 0;
         delay_us(20);
-        for(bits = 0;bits < 9;bits ++)
+        for(bits = 0;bits < 8;bits ++)
         {
             delay_us(80);
             //(bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
@@ -222,14 +222,15 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
             {
                 byte |= (bit << bits);
             }
-            if(bits > 7)
+            /*if(bits > 7)
             {
                 if(bit == 1)
                 {
                     ring_buffer_queue(&uart_rx_ring_buf,byte);
                 }
-            }
+            }*/
         }
+        ring_buffer_queue(&uart_rx_ring_buf,byte);
         //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
         //EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);

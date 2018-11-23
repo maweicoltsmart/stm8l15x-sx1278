@@ -120,7 +120,11 @@ void TimingDelay_Decrement(void)
 void DelayMs( uint32_t ms )
 {
     //Delay(ms);
-    for(int16_t i = 0;i < 2200;i ++);
+    //for(int16_t i = 0;i < 2200;i ++);
+    while(ms--)
+    {
+        delay_us(1000);
+    }
 }
 
 void delay_us(u16 n_us)
