@@ -208,31 +208,36 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     uint8_t bit = 0;
 
     EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
-    GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_No_IT); // UART RX
+    //GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_No_IT); // UART RX
     if(GetRunModePin() == En_Config_Mode)
     {
         byte = 0;
-        delay_us(20);
-        for(bits = 0;bits < 8;bits ++)
+        delay_10us(1);
+        if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
-            delay_us(80);
+            //GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
+            return;
+        }
+        for(bits = 0;bits < 9;bits ++)
+        {
+            delay_10us(8);
             //(bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
             bit = (GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN) & 0x04)?1:0;
             if(bits < 8)
             {
                 byte |= (bit << bits);
             }
-            /*if(bits > 7)
+            if(bits > 7)
             {
                 if(bit == 1)
                 {
                     ring_buffer_queue(&uart_rx_ring_buf,byte);
                 }
-            }*/
+            }
         }
-        ring_buffer_queue(&uart_rx_ring_buf,byte);
+        //ring_buffer_queue(&uart_rx_ring_buf,0X55);
         //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
-        GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
+        //GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
         //EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
     }
     else

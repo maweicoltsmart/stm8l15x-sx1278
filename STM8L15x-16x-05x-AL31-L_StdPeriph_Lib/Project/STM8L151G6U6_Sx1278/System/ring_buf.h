@@ -1,145 +1,157 @@
-#include "stm8l15x.h"
+/*
+ * Copyright (c) 2008, Swedish Institute of Computer Science.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the Institute nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * This file is part of the Contiki operating system.
+ *
+ */
+
+/**
+ * \file
+ *         Header file for the ring buffer library
+ * \author
+ *         Adam Dunkels <adam@sics.se>
+ */
+
+/** \addtogroup lib
+ * @{ */
+
+/**
+ * \defgroup ringbuf Ring buffer library
+ * @{
+ *
+ * The ring buffer library implements ring (circular) buffer where
+ * bytes can be read and written independently. A ring buffer is
+ * particularly useful in device drivers where data can come in
+ * through interrupts.
+ *
+ */
+
+#ifndef RINGBUF_H_
+#define RINGBUF_H_
 #include "system.h"
 
-/**
- * @file
- * Prototypes and structures for the ring buffer module.
+#define UART_RX_BUF_SIZE                128
+#define UART_TX_BUF_SIZE                128
+#define MAX_RING_BUF_SIZE                128
+
+/** \def CC_ACCESS_NOW(x)
+ * This macro ensures that the access to a non-volatile variable can
+ * not be reordered or optimized by the compiler.
+ * See also https://lwn.net/Articles/508991/ - In Linux the macro is
+ * called ACCESS_ONCE
+ * The type must be passed, because the typeof-operator is a gcc
+ * extension
  */
 
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#define CC_ACCESS_NOW(type, variable) (*(volatile type *)&(variable))
 
 /**
- * The size of a ring buffer.
- * Due to the design only <tt> RING_BUFFER_SIZE-1 </tt> items
- * can be contained in the buffer.
- * The buffer size must be a power of two.
-*/
-#define RING_BUFFER_SIZE 128 * 2
-
-#if (RING_BUFFER_SIZE & (RING_BUFFER_SIZE - 1)) != 0
-#error "RING_BUFFER_SIZE must be a power of two"
-#endif
-
-/**
- * The type which is used to hold the size
- * and the indicies of the buffer.
- * Must be able to fit \c RING_BUFFER_SIZE .
+ * \brief      Structure that holds the state of a ring buffer.
+ *
+ *             This structure holds the state of a ring buffer. The
+ *             actual buffer needs to be defined separately. This
+ *             struct is an opaque structure with no user-visible
+ *             elements.
+ *
  */
-typedef uint8_t ring_buffer_size_t;
+struct ringbuf {
+  uint8_t data[MAX_RING_BUF_SIZE];
+  uint8_t mask;
 
-/**
- * Used as a modulo operator
- * as <tt> a % b = (a & (b ? 1)) </tt>
- * where \c a is a positive index in the buffer and
- * \c b is the (power of two) size of the buffer.
- */
-#define RING_BUFFER_MASK (RING_BUFFER_SIZE-1)
-
-/**
- * Simplifies the use of <tt>struct ring_buffer_t</tt>.
- */
-typedef struct ring_buffer_t ring_buffer_t;
-
-/**
- * Structure which holds a ring buffer.
- * The buffer contains a buffer array
- * as well as metadata for the ring buffer.
- */
-struct ring_buffer_t {
-  /** Buffer memory. */
-  char buffer[RING_BUFFER_SIZE];
-  /** Index of tail. */
-  ring_buffer_size_t tail_index;
-  /** Index of head. */
-  ring_buffer_size_t head_index;
+  /* XXX these must be 8-bit quantities to avoid race conditions. */
+  uint8_t put_ptr, get_ptr;
 };
 
+typedef struct ringbuf ring_buffer_t;
+typedef uint8_t ring_buffer_size_t;
 /**
- * Initializes the ring buffer pointed to by <em>buffer</em>.
- * This function can also be used to empty/reset the buffer.
- * @param buffer The ring buffer to initialize.
+ * \brief      Initialize a ring buffer
+ * \param r    A pointer to a struct ringbuf to hold the state of the ring buffer
+ * \param a    A pointer to an array to hold the data in the buffer
+ * \param size_power_of_two The size of the ring buffer, which must be a power of two
+ *
+ *             This function initiates a ring buffer. The data in the
+ *             buffer is stored in an external array, to which a
+ *             pointer must be supplied. The size of the ring buffer
+ *             must be a power of two and cannot be larger than 128
+ *             bytes.
+ *
  */
-void ring_buffer_init(ring_buffer_t *buffer);
+void    ring_buffer_init(struct ringbuf *r);
 
 /**
- * Adds a byte to a ring buffer.
- * @param buffer The buffer in which the data should be placed.
- * @param data The byte to place.
+ * \brief      Insert a byte into the ring buffer
+ * \param r    A pointer to a struct ringbuf to hold the state of the ring buffer
+ * \param c    The byte to be written to the buffer
+ * \return     Non-zero if there data could be written, or zero if the buffer was full.
+ *
+ *             This function inserts a byte into the ring buffer. It
+ *             is safe to call this function from an interrupt
+ *             handler.
+ *
  */
-void ring_buffer_queue(ring_buffer_t *buffer, char data);
+int     ringbuf_put(struct ringbuf *r, uint8_t c);
+
 
 /**
- * Adds an array of bytes to a ring buffer.
- * @param buffer The buffer in which the data should be placed.
- * @param data A pointer to the array of bytes to place in the queue.
- * @param size The size of the array.
+ * \brief      Get a byte from the ring buffer
+ * \param r    A pointer to a struct ringbuf to hold the state of the ring buffer
+ * \return     The data from the buffer, or -1 if the buffer was empty
+ *
+ *             This function removes a byte from the ring buffer. It
+ *             is safe to call this function from an interrupt
+ *             handler.
+ *
  */
-void ring_buffer_queue_arr(ring_buffer_t *buffer, const char *data, ring_buffer_size_t size);
+int     ringbuf_get(struct ringbuf *r);
 
 /**
- * Returns the oldest byte in a ring buffer.
- * @param buffer The buffer from which the data should be returned.
- * @param data A pointer to the location at which the data should be placed.
- * @return 1 if data was returned; 0 otherwise.
+ * \brief      Get the size of a ring buffer
+ * \param r    A pointer to a struct ringbuf to hold the state of the ring buffer
+ * \return     The size of the buffer.
  */
+int     ringbuf_size(struct ringbuf *r);
+
+/**
+ * \brief      Get the number of elements currently in the ring buffer
+ * \param r    A pointer to a struct ringbuf to hold the state of the ring buffer
+ * \return     The number of elements in the buffer.
+ */
+int     ringbuf_elements(struct ringbuf *r);
+
+#define ring_buffer_num_items ringbuf_elements
+#define ring_buffer_queue       ringbuf_put
+
 uint8_t ring_buffer_dequeue(ring_buffer_t *buffer, char *data);
-
-/**
- * Returns the <em>len</em> oldest bytes in a ring buffer.
- * @param buffer The buffer from which the data should be returned.
- * @param data A pointer to the array at which the data should be placed.
- * @param len The maximum number of bytes to return.
- * @return The number of bytes returned.
- */
 uint8_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, char *data, ring_buffer_size_t len);
-/**
- * Peeks a ring buffer, i.e. returns an element without removing it.
- * @param buffer The buffer from which the data should be returned.
- * @param data A pointer to the location at which the data should be placed.
- * @param index The index to peek.
- * @return 1 if data was returned; 0 otherwise.
- */
-uint8_t ring_buffer_peek(ring_buffer_t *buffer, char *data, ring_buffer_size_t index);
+uint8_t ring_buffer_is_empty(ring_buffer_t *buffer);
+void ring_buffer_queue_arr(ring_buffer_t *buffer, const char *data, ring_buffer_size_t size);
+#endif /* RINGBUF_H_ */
 
-
-/**
- * Returns whether a ring buffer is empty.
- * @param buffer The buffer for which it should be returned whether it is empty.
- * @return 1 if empty; 0 otherwise.
- */
-inline uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
-  uint8_t result;
-  BoardDisableIrq();
-  result = (buffer->head_index == buffer->tail_index);
-  BoardEnableIrq();
-  return result;
-}
-
-/**
- * Returns whether a ring buffer is full.
- * @param buffer The buffer for which it should be returned whether it is full.
- * @return 1 if full; 0 otherwise.
- */
-inline uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
-  uint8_t result;
-  BoardDisableIrq();
-  result = (((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK) == RING_BUFFER_MASK);
-  BoardEnableIrq();
-  return result;
-}
-
-/**
- * Returns the number of items in a ring buffer.
- * @param buffer The buffer for which the number of items should be returned.
- * @return The number of items in the ring buffer.
- */
-inline ring_buffer_size_t ring_buffer_num_items(ring_buffer_t *buffer) {
-  uint8_t result;
-  BoardDisableIrq();
-  result = ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
-  BoardEnableIrq();
-  return result;
-}
-
-#endif /* RINGBUFFER_H */
+/** @}*/
+/** @}*/

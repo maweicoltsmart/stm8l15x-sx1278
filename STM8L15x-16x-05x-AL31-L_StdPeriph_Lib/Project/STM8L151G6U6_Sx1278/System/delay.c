@@ -119,43 +119,37 @@ void TimingDelay_Decrement(void)
 
 void DelayMs( uint32_t ms )
 {
-    //Delay(ms);
-    //for(int16_t i = 0;i < 2200;i ++);
-    while(ms--)
-    {
-        delay_us(1000);
-    }
+    for(int16_t i = 0;i < 2200;i ++);
 }
 
-void delay_us(u16 n_us)
+void delay_10us(u16 n_10us)
 {
 /* Init TIMER 4 */
-  CLK_PeripheralClockConfig(CLK_Peripheral_TIM2, ENABLE);
+  CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
 
 /* prescaler: / (2^0) = /1 */
-  TIM2->PSCR = 0;
+  TIM4->PSCR = 0;
 
 /* SYS_CLK_HSI_DIV1 Auto-Reload value: 16M / 1 = 16M, 16M / 100k = 160 */
-  TIM2->ARRH = 0;
-  TIM2->ARRL = 16;
+  TIM4->ARR = 160;
 
 /* Counter value: 10, to compensate the initialization of TIMER */
-  TIM2->CNTRH = 0;
-  TIM2->CNTRL = 10;
+  TIM4->CNTR = 10;
 
 /* clear update flag */
-  TIM2->SR1 &= ~TIM_SR1_UIF;
+  TIM4->SR1 &= ~TIM4_SR1_UIF;
 
 /* Enable Counter */
-  TIM2->CR1 |= TIM_CR1_CEN;
+  TIM4->CR1 |= TIM4_CR1_CEN;
 
-  while(n_us--)
+  while(n_10us--)
   {
-    while((TIM2->SR1 & TIM_SR1_UIF) == 0) ;
-    TIM2->SR1 &= ~TIM_SR1_UIF;
+    while((TIM4->SR1 & TIM4_SR1_UIF) == 0) ;
+    TIM4->SR1 &= ~TIM4_SR1_UIF;
   }
 
 /* Disable Counter */
-  TIM2->CR1 &= ~TIM_CR1_CEN;
-  CLK_PeripheralClockConfig(CLK_Peripheral_TIM2, DISABLE);
+  TIM4->CR1 &= ~TIM4_CR1_CEN;
+ CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, DISABLE);
+
 }
