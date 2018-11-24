@@ -71,6 +71,8 @@ void normal_mode_routin(void)
     NormalModeRadioEvents.RxTimeout = NormalModeOnRxTimeout;
     NormalModeRadioEvents.RxError = NormalModeOnRxError;
     BoardDisableIrq();
+    TIM4_Config();
+    RTC_Config();
     Radio.Init( &NormalModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
@@ -84,6 +86,7 @@ void normal_mode_routin(void)
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, true, 8, LORA_IQ_INVERSION_ON, true );
     Radio.Rx( 0 ); // 0: receive RxContinuous
+    ComportInit();
     BoardEnableIrq();
     while(GetRunModePin() == En_Normal_Mode)
     {

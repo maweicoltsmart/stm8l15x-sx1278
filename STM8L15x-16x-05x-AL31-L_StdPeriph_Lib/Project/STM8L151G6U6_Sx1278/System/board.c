@@ -29,7 +29,22 @@ void RTC_Config(void)
   //RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
   /* Enable wake up unit Interrupt */
   RTC_ClearITPendingBit(RTC_IT_WUT);
-  RTC_ITConfig(RTC_IT_WUT, ENABLE);
+  if(GetRunModePin() == En_Low_Power_Mode)
+  {
+      RTC_ITConfig(RTC_IT_WUT, ENABLE);
+      RTC_WakeUpCmd(DISABLE);
+      RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
+      RTC_WakeUpCmd(ENABLE);
+      CLK_LSICmd(ENABLE);
+  }
+  else
+  {
+      RTC_ITConfig(RTC_IT_WUT, DISABLE);
+      RTC_WakeUpCmd(DISABLE);
+      CLK_LSICmd(DISABLE);
+      CLK_PeripheralClockConfig(CLK_Peripheral_RTC, DISABLE);
+      return;
+  }
 }
 
 void TIM4_Config(void)
@@ -50,7 +65,15 @@ void TIM4_Config(void)
   TIM4_ClearFlag(TIM4_FLAG_Update);
   /* Enable update interrupt */
   TIM4_ClearITPendingBit(TIM4_IT_Update);
-  TIM4_ITConfig(TIM4_IT_Update, ENABLE);
+  if(GetRunModePin() == En_Config_Mode)
+  {
+      CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, DISABLE);
+      TIM4_ITConfig(TIM4_IT_Update, DISABLE);
+  }
+  else
+  {
+      TIM4_ITConfig(TIM4_IT_Update, ENABLE);
+  }
   TIM4_Cmd(ENABLE);
 }
 
@@ -99,7 +122,7 @@ void BoardInitMcu( void )
     GPIO_Init(SX1278_IO1_PORT, SX1278_IO1_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO1
     cfg_parm_factory_reset();
     cfg_parm_dump_to_ram();
-    ComportInit();
+    // ComportInit();
     if(stTmpCfgParm.option.optionbit.io_pushpull == 1)
     {
         GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_High_Fast); // AUX mode output
@@ -113,7 +136,7 @@ void BoardInitMcu( void )
     BEEP_Cmd(DISABLE);
     BEEP_LSClockToTIMConnectCmd(ENABLE);
     BEEP_LSICalibrationConfig(32768);
-    TIM4_Config();
+    //TIM4_Config();
     SpiInit( );
     SX1276IoInit( );
     BoardEnableIrq();

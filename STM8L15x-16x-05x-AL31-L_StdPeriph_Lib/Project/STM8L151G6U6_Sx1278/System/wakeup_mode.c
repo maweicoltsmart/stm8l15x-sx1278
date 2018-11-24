@@ -87,6 +87,8 @@ void wakeup_mode_routin(void)
     WakeUpModeRadioEvents.RxTimeout = WakeUpModeOnRxTimeout;
     WakeUpModeRadioEvents.RxError = WakeUpModeOnRxError;
     BoardDisableIrq();
+    TIM4_Config();
+    RTC_Config();
     Radio.Init( &WakeUpModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
@@ -94,6 +96,7 @@ void wakeup_mode_routin(void)
     SetTxCfg();
     SetRxCfg();
     Radio.Rx( 0 ); // 0: receive RxContinuous
+    ComportInit();
     BoardEnableIrq();
     while(GetRunModePin() == En_Wake_Up_Mode)
     {

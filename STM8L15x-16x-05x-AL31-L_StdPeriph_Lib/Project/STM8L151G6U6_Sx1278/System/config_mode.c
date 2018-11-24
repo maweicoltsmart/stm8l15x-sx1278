@@ -14,8 +14,9 @@ void config_mode_routin(void)
 {
     char cmdbyte;
     char cmdbuf[6];
+    
     BoardDisableIrq();
-    USART_Cmd(USART1, DISABLE);
+    TIM4_Config();
     ConfigModeRadioEvents.TxDone = NULL;
     ConfigModeRadioEvents.RxDone = NULL;
     ConfigModeRadioEvents.TxTimeout = NULL;
@@ -23,21 +24,11 @@ void config_mode_routin(void)
     ConfigModeRadioEvents.RxError = NULL;
     ConfigModeRadioEvents.CadDone = NULL;
 
-    RTC_ITConfig(RTC_IT_WUT, DISABLE);
+    RTC_Config();
 
     Radio.Init( &ConfigModeRadioEvents );
     Radio.Sleep( );
-    USART_DeInit(USART1);
-    USART_Init(USART1, 9600,
-                  USART_WordLength_8b,
-                  USART_StopBits_1,
-                  USART_Parity_No,
-                  (USART_Mode_TypeDef)(USART_Mode_Tx));
-    /* Configure USART Tx as alternate function push-pull  (software pull up)*/
-    GPIO_ExternalPullUpConfig(SX1278_TX_PORT, SX1278_TX_PIN, ENABLE);
-    USART_Cmd(USART1, ENABLE);
-    EXTI_SetPinSensitivity(EXTI_Pin_2, EXTI_Trigger_Falling); // UART RX
-    GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_FL_IT); // UART RX
+    ComportInit();
     BoardEnableIrq();
     // cfg gpio & radio
     //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
@@ -48,6 +39,7 @@ void config_mode_routin(void)
         while(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
         {
             ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
+            //putchar(cmdbyte);
             switch(cmdbyte)
             {
               case 0xC0: // µÙµÁº«“‰

@@ -5,17 +5,7 @@
 #include "cfg_parm.h"
 #include "manufacture_parm.h"
 #include "delay.h"
-
-#ifdef _RAISONANCE_
-#define PUTCHAR_PROTOTYPE int putchar (char c)
-#define GETCHAR_PROTOTYPE int getchar (void)
-#elif defined (_COSMIC_)
-#define PUTCHAR_PROTOTYPE char putchar (char c)
-#define GETCHAR_PROTOTYPE char getchar (void)
-#else /* _IAR_ */
-#define PUTCHAR_PROTOTYPE int putchar (int c)
-#define GETCHAR_PROTOTYPE int getchar (void)
-#endif /* _RAISONANCE_ */
+#include "comport.h"
 
 #define TX_OUTPUT_POWER                             20        // 20 dBm
 #define TX_TIMEOUT                                  65535     // seconds (MAX value)
@@ -107,6 +97,9 @@ void TestModeOnRxError( void )
 void test_mode_routin(void)
 {
     // cfg gpio & radio
+    RTC_Config();
+    TIM4_Config();
+    ComportInit();
     cfg_parm_factory_reset();
     stManufactureParm.softwareversion = VERSION_STR;
     GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_In_FL_No_IT); // AUX mode input
@@ -144,36 +137,4 @@ void test_mode_routin(void)
     }
     //printf("check over!\r\n");
     // reset mcu and get run mode again
-}
-
-/**
-  * @brief Retargets the C library printf function to the USART.
-  * @param[in] c Character to send
-  * @retval char Character sent
-  * @par Required preconditions:
-  * - None
-  */
-PUTCHAR_PROTOTYPE
-{
-  /* Write a character to the USART */
-  USART_SendData8(USART1, c);
-  /* Loop until the end of transmission */
-  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-
-  return (c);
-}
-/**
-  * @brief Retargets the C library scanf function to the USART.
-  * @param[in] None
-  * @retval char Character to Read
-  * @par Required preconditions:
-  * - None
-  */
-GETCHAR_PROTOTYPE
-{
-  int c = 0;
-  /* Loop until the Read data register flag is SET */
-  while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET);
-    c = USART_ReceiveData8(USART1);
-    return (c);
 }

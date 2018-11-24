@@ -87,6 +87,7 @@ void lowpower_mode_routin(void)
     LowPowerModeRadioEvents.RxError = LowPowerModeOnRxError;
     LowPowerModeRadioEvents.CadDone = LowPowerModeOnCadDone;
     BoardDisableIrq();
+    TIM4_Config();
     Radio.Init( &LowPowerModeRadioEvents );
     //factory = 433000000;
     Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
@@ -97,12 +98,10 @@ void lowpower_mode_routin(void)
     Radio.Sleep( );
     /* RTC configuration -------------------------------------------*/
     RTC_Config();
-    RTC_WakeUpCmd(DISABLE);
-    RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
-    RTC_WakeUpCmd(ENABLE);
-    CLK_LSICmd(ENABLE);
+    
     SetTxCfg();
     SetRxCfg();
+    ComportInit();
     BoardEnableIrq();
     
     while(GetRunModePin() == En_Low_Power_Mode)
