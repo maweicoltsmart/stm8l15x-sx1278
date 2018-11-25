@@ -123,8 +123,18 @@ ringbuf_elements(struct ringbuf *r)
 /*---------------------------------------------------------------------------*/
 uint8_t ring_buffer_dequeue(ring_buffer_t *buffer, char *data)
 {
-    *data = ringbuf_get(buffer);
-    return 1;
+    int result;
+    
+    result = ringbuf_get(buffer);
+    if(result > 0)
+    {
+        *data = result;
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 uint8_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, char *data, ring_buffer_size_t len)
