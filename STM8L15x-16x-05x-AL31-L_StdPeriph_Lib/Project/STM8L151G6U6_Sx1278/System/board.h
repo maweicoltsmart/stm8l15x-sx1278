@@ -24,10 +24,10 @@ typedef enum{
 #define SX1278_RF_SWITCH_PORT        GPIOB
 #define SX1278_RF_SWITCH_PIN         GPIO_Pin_3
 
-#define SX1278_DIO0_PORT                GPIOD
-#define SX1278_DIO0_PIN                 GPIO_Pin_0
-#define SX1278_DIO0_EXTI_PIN            EXTI_Pin_0
-#define SX1278_DIO0_EXTI_IT_PIN         EXTI_IT_Pin0
+#define SX1278_DIO0_PORT                GPIOA
+#define SX1278_DIO0_PIN                 GPIO_Pin_5
+#define SX1278_DIO0_EXTI_PIN            EXTI_Pin_5
+#define SX1278_DIO0_EXTI_IT_PIN         EXTI_IT_Pin5
 
 #define SX1278_DIO1_PORT                GPIOA
 #define SX1278_DIO1_PIN                 GPIO_Pin_4
@@ -85,8 +85,8 @@ typedef enum{
 #define SX1278_IO6_PORT        GPIOD
 #define SX1278_IO6_PIN         GPIO_Pin_1
 
-#define SX1278_TEST_PORT        GPIOA
-#define SX1278_TEST_PIN         GPIO_Pin_5
+#define SX1278_TEST_PORT        GPIOD
+#define SX1278_TEST_PIN         GPIO_Pin_0
 
 void InitRunModePin(void);
 void BoardInitMcu( void );

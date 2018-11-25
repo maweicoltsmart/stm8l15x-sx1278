@@ -129,11 +129,22 @@ uint8_t ring_buffer_dequeue(ring_buffer_t *buffer, char *data)
 
 uint8_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, char *data, ring_buffer_size_t len)
 {
-    for(ring_buffer_size_t loop = 0;loop < len;loop ++)
+    int result;
+    ring_buffer_size_t loop;
+
+    for(loop = 0;loop < len;loop ++)
     {
-        data[loop] = ringbuf_get(buffer);
+        result = ringbuf_get(buffer);
+        if(result == -1)
+        {
+            return loop;
+        }
+        else
+        {
+            data[loop] = result;
+        }
     }
-    return len;
+    return loop;
 }
 uint8_t ring_buffer_is_empty(ring_buffer_t *buffer)
 {
