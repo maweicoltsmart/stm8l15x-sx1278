@@ -142,31 +142,31 @@ float cfg_parm_get_air_baud(void)
     switch(stTmpCfgParm.speed.speedbit.radio_baud)
     {
         case 0:
-          airbaud = 292.96875; //300 125k sf = 12
+          airbaud = 244.140620; //300 125k sf = 9
           break;
         case 1:
-          airbaud = 976.5625; //1200 125k sf = 10
+          airbaud = 976.562500;//1200 125k sf = 7
           break;
         case 2:
-          airbaud = 1953.125; //2400 250k sf = 10
+          airbaud = 1953.125000; //2400 250k sf = 7
           break;
         case 3:
-          airbaud = 3515.625; //4800 250k sf = 9
+          airbaud = 3906.250000; //4800 250k sf = 6
           break;
         case 4:
-          airbaud = 6250; //7200 250k sf = 8
+          airbaud = 7812.500000; //7200 500k sf = 6
           break;
         case 5:
-          airbaud = 7031.25; //9600 500k sf = 9
+          airbaud = 7812.500000; //7200 500k sf = 6
           break;
         case 6:
-          airbaud = 12500; //14400 500k sf = 8
+          airbaud = 7812.500000; //7200 500k sf = 6
           break;
         case 7:
-          airbaud = 21875; //19200 500k sf = 7
+          airbaud = 7812.500000; //7200 500k sf = 6
           break;
         default:
-          airbaud = 1953.125; // 2400
+          airbaud = 1953.125000; //2400 250k sf = 7
           break;
     }
     return airbaud;
@@ -193,7 +193,7 @@ uint8_t cfg_parm_get_air_bandwith(void)
           bandwith = 1;
           break;
         case 4:
-          bandwith = 1;
+          bandwith = 2;
           break;
         case 5:
           bandwith = 2;
@@ -220,31 +220,31 @@ uint8_t cfg_parm_get_air_sf(void)
     switch(stTmpCfgParm.speed.speedbit.radio_baud)
     {
         case 0:
-          sf = 12;
+          sf = 9;
           break;
         case 1:
-          sf = 10;
-          break;
-        case 2:
-          sf = 10;
-          break;
-        case 3:
-          sf = 9;
-          break;
-        case 4:
-          sf = 8;
-          break;
-        case 5:
-          sf = 9;
-          break;
-        case 6:
-          sf = 8;
-          break;
-        case 7:
           sf = 7;
           break;
+        case 2:
+          sf = 7;
+          break;
+        case 3:
+          sf = 6;
+          break;
+        case 4:
+          sf = 6;
+          break;
+        case 5:
+          sf = 6;
+          break;
+        case 6:
+          sf = 6;
+          break;
+        case 7:
+          sf = 6;
+          break;
         default:
-          sf = 10;
+          sf = 7;
           break;
     }
     return sf;

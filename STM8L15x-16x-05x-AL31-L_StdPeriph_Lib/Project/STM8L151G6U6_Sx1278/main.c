@@ -55,28 +55,27 @@ void main(void)
 {
     Run_Mode_Type run_mode;
     BoardInitMcu();
-    run_mode = GetRunModePin();
-    switch(run_mode)
+    while(1)
     {
-        case En_Normal_Mode:
-          normal_mode_routin();
-          break;
-        case En_Wake_Up_Mode:
-          wakeup_mode_routin();
-          break;
-        case En_Low_Power_Mode:
-          lowpower_mode_routin();
-          break;
-        case En_Config_Mode:
-          config_mode_routin();
-          break;
-        case En_Test_Mode:
-          test_mode_routin();
-          break;
-    }
-    /* Infinite loop */
-    while (1)
-    {
+        run_mode = GetRunModePin();
+        switch(run_mode)
+        {
+            case En_Normal_Mode:
+              normal_mode_routin();
+              break;
+            case En_Wake_Up_Mode:
+              wakeup_mode_routin();
+              break;
+            case En_Low_Power_Mode:
+              lowpower_mode_routin();
+              break;
+            case En_Config_Mode:
+              config_mode_routin();
+              break;
+            case En_Test_Mode:
+              test_mode_routin();
+              break;
+        }
     }
 }
 

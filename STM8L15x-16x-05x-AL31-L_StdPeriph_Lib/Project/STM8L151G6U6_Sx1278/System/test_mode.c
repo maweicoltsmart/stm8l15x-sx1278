@@ -128,6 +128,7 @@ void test_mode_routin(void)
     TestModeState = LOWPOWER;
     Radio.Sleep();
     */
+    printf("test\r\n");
     while(GetRunModePin() == En_Test_Mode)
     {
         GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);

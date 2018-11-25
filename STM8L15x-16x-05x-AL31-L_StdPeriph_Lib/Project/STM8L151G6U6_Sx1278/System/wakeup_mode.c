@@ -98,6 +98,7 @@ void wakeup_mode_routin(void)
     Radio.Rx( 0 ); // 0: receive RxContinuous
     ComportInit();
     BoardEnableIrq();
+    printf("wakeup\r\n");
     while(GetRunModePin() == En_Wake_Up_Mode)
     {
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))

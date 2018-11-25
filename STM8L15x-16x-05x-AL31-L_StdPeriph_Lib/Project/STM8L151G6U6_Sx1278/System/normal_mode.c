@@ -88,6 +88,7 @@ void normal_mode_routin(void)
     Radio.Rx( 0 ); // 0: receive RxContinuous
     ComportInit();
     BoardEnableIrq();
+    printf("normal\r\n");
     while(GetRunModePin() == En_Normal_Mode)
     {
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))

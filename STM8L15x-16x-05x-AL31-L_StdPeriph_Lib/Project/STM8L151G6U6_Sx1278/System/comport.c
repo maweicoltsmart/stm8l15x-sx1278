@@ -48,7 +48,7 @@ void ComportInit(void)
         GPIO_ExternalPullUpConfig(SX1278_RX_PORT, SX1278_RX_PIN, ENABLE);
         USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);
         EXTI_SetPinSensitivity(EXTI_Pin_2, EXTI_Trigger_Falling); // UART RX
-        GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_FL_IT); // UART RX
+        GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_IT); // UART RX
     }
     else if(GetRunModePin() == En_Low_Power_Mode)
     {

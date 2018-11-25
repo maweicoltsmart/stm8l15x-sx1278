@@ -57,8 +57,14 @@ typedef enum{
 
 #define SX1278_M0_PORT        GPIOC
 #define SX1278_M0_PIN         GPIO_Pin_0
+#define SX1278_M0_EXTI_PIN            EXTI_Pin_0
+#define SX1278_M0_EXTI_IT_PIN         EXTI_IT_Pin0
+
 #define SX1278_M1_PORT        GPIOC
 #define SX1278_M1_PIN         GPIO_Pin_1
+#define SX1278_M1_EXTI_PIN            EXTI_Pin_1
+#define SX1278_M1_EXTI_IT_PIN         EXTI_IT_Pin1
+
 #define SX1278_RX_PORT        GPIOC
 #define SX1278_RX_PIN         GPIO_Pin_2
 #define SX1278_TX_PORT        GPIOC
@@ -82,6 +88,7 @@ typedef enum{
 #define SX1278_TEST_PORT        GPIOA
 #define SX1278_TEST_PIN         GPIO_Pin_5
 
+void InitRunModePin(void);
 void BoardInitMcu( void );
 Run_Mode_Type GetRunModePin(void);
 void RTC_Config(void);

@@ -15,6 +15,7 @@ void config_mode_routin(void)
     char cmdbyte;
     char cmdbuf[6];
     
+    PWR_UltraLowPowerCmd(DISABLE); // TIM2 ±÷”ª·”–—”≥Ÿ
     BoardDisableIrq();
     TIM4_Config();
     ConfigModeRadioEvents.TxDone = NULL;
@@ -30,6 +31,7 @@ void config_mode_routin(void)
     Radio.Sleep( );
     ComportInit();
     BoardEnableIrq();
+    printf("config\r\n");
     // cfg gpio & radio
     //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_Low_Fast); // AUX mode output

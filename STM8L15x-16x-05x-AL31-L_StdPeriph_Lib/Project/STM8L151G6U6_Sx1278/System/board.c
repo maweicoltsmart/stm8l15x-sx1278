@@ -5,6 +5,8 @@
 #include "cfg_parm.h"
 #include "delay.h"
 #include "system.h"
+#include <math.h>
+#include <stdio.h>
 
 /**
   * @brief  Configure TIM4 peripheral   
@@ -16,6 +18,7 @@ __IO uint32_t TimingDelay;
 
 void RTC_Config(void)
 {
+  RTC_DeInit();
   /* Enable RTC clock */
   CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);
   /* Wait for LSI clock to be ready */
@@ -80,8 +83,10 @@ void TIM4_Config(void)
 void InitRunModePin(void)
 {
     GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
-    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_PU_No_IT); // M0 mode input
-    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_PU_No_IT); // M1 mode input
+    EXTI_SetPinSensitivity(SX1278_M0_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M0
+    EXTI_SetPinSensitivity(SX1278_M1_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M1
+    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_PU_IT); // M0 mode input
+    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_PU_IT); // M1 mode input
 }
 
 Run_Mode_Type GetRunModePin(void)
@@ -120,8 +125,11 @@ void BoardInitMcu( void )
     GPIO_Init(SX1278_IO3_PORT, SX1278_IO3_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO3
     GPIO_Init(SX1278_IO2_PORT, SX1278_IO2_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO2
     GPIO_Init(SX1278_IO1_PORT, SX1278_IO1_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO1
-    cfg_parm_factory_reset();
     cfg_parm_dump_to_ram();
+    if((stTmpCfgParm.addr_h == 0x00) && (stTmpCfgParm.addr_l == 0x00) && (stTmpCfgParm.speed.speed == 0x00) && (stTmpCfgParm.channel.channel == 0x00) && (stTmpCfgParm.option.option == 0x00))
+    {
+        cfg_parm_factory_reset();
+    }
     // ComportInit();
     if(stTmpCfgParm.option.optionbit.io_pushpull == 1)
     {
@@ -136,8 +144,20 @@ void BoardInitMcu( void )
     BEEP_Cmd(DISABLE);
     BEEP_LSClockToTIMConnectCmd(ENABLE);
     BEEP_LSICalibrationConfig(32768);
-    //TIM4_Config();
     SpiInit( );
     SX1276IoInit( );
     BoardEnableIrq();
+}
+
+void caculatebps(void)
+{
+  uint8_t sf_array[7] = {6,7,8,9,10,11,12};
+  float bandwith[3] = {125000.0,250000.0,500000.0};
+  for(uint8_t i = 0;i < 3;i++)
+  {
+      for(uint8_t j = 0;j < 7;j++)
+      {
+          printf("bandwith = %f, sf = %d, tsym = %f, bps = %f\r\n",bandwith[i],sf_array[j],(float)pow(2,sf_array[j]) / bandwith[i],1.0 / ((float)pow(2,sf_array[j]) / bandwith[i]));
+      }
+  }
 }

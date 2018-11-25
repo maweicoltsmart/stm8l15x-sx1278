@@ -123,7 +123,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
     /* Clear the periodic wakeup unit flag */
     RTC_ClearITPendingBit(RTC_IT_WUT);
     Radio.StartCad();
-    halt();
+    //halt(); // this cmd will let stack over flow, because the interrupt never return
 }
 /**
   * @brief External IT PORTE/F and PVD Interrupt routine.
@@ -212,7 +212,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     {
         byte = 0;
         delay_10us(15);
-        //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
             return;
@@ -220,7 +220,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
         for(bits = 0;bits < 9;bits ++)
         {
             delay_10us(79);
-            //(bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+            (bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
             bit = (GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN) & 0x04)?1:0;
             if(bits < 8)
             {
@@ -234,7 +234,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
                 }
             }
         }
-        //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);;
     }
     else

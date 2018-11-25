@@ -103,7 +103,7 @@ void lowpower_mode_routin(void)
     SetRxCfg();
     ComportInit();
     BoardEnableIrq();
-    
+    printf("lowpower\r\n");
     while(GetRunModePin() == En_Low_Power_Mode)
     {
         RadioState_t rfstatus;
