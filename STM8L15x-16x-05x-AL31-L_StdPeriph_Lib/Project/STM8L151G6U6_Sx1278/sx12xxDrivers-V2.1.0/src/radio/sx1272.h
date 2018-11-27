@@ -31,14 +31,14 @@ extern uint8_t SX1272Regs[0x70];
  *
  * \param [IN] opMode New operating mode
  */
-void SX1272SetLoRaOn( bool enable );
+void SX1272SetLoRaOn( uint8_t enable );
 
 /*!
  * \brief Gets the LoRa modem state
  *
  * \retval LoraOn Current LoRa modem mode
  */
-bool SX1272GetLoRaOn( void );
+uint8_t SX1272GetLoRaOn( void );
 
 /*!
  * \brief Initializes the SX1272

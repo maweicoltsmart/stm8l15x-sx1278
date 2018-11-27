@@ -38,11 +38,11 @@
 #include "sx1272-Fsk.h"
 #include "sx1272-FskMisc.h"
 
-extern tFskSettings FskSettings;
+extern tFskSettings SX1272FskSettings;
 
 void SX1272FskSetRFFrequency( uint32_t freq )
 {
-    FskSettings.RFFrequency = freq;
+    SX1272FskSettings.RFFrequency = freq;
 
     freq = ( uint32_t )( ( double )freq / ( double )FREQ_STEP );
     SX1272->RegFrfMsb = ( uint8_t )( ( freq >> 16 ) & 0xFF );
@@ -54,10 +54,10 @@ void SX1272FskSetRFFrequency( uint32_t freq )
 uint32_t SX1272FskGetRFFrequency( void )
 {
     SX1272ReadBuffer( REG_FRFMSB, &SX1272->RegFrfMsb, 3 );
-    FskSettings.RFFrequency = ( ( uint32_t )SX1272->RegFrfMsb << 16 ) | ( ( uint32_t )SX1272->RegFrfMid << 8 ) | ( ( uint32_t )SX1272->RegFrfLsb );
-    FskSettings.RFFrequency = ( uint32_t )( ( double )FskSettings.RFFrequency * ( double )FREQ_STEP );
+    SX1272FskSettings.RFFrequency = ( ( uint32_t )SX1272->RegFrfMsb << 16 ) | ( ( uint32_t )SX1272->RegFrfMid << 8 ) | ( ( uint32_t )SX1272->RegFrfLsb );
+    SX1272FskSettings.RFFrequency = ( uint32_t )( ( double )SX1272FskSettings.RFFrequency * ( double )FREQ_STEP );
 
-    return FskSettings.RFFrequency;
+    return SX1272FskSettings.RFFrequency;
 }
 
 void SX1272FskRxCalibrate( void )
@@ -76,7 +76,7 @@ void SX1272FskRxCalibrate( void )
 
 void SX1272FskSetBitrate( uint32_t bitrate )
 {
-    FskSettings.Bitrate = bitrate;
+    SX1272FskSettings.Bitrate = bitrate;
     
     bitrate = ( uint16_t )( ( double )XTAL_FREQ / ( double )bitrate );
     SX1272->RegBitrateMsb    = ( uint8_t )( bitrate >> 8 );
@@ -87,15 +87,15 @@ void SX1272FskSetBitrate( uint32_t bitrate )
 uint32_t SX1272FskGetBitrate( void )
 {
     SX1272ReadBuffer( REG_BITRATEMSB, &SX1272->RegBitrateMsb, 2 );
-    FskSettings.Bitrate = ( ( ( uint32_t )SX1272->RegBitrateMsb << 8 ) | ( ( uint32_t )SX1272->RegBitrateLsb ) );
-    FskSettings.Bitrate = ( uint16_t )( ( double )XTAL_FREQ / ( double )FskSettings.Bitrate );
+    SX1272FskSettings.Bitrate = ( ( ( uint32_t )SX1272->RegBitrateMsb << 8 ) | ( ( uint32_t )SX1272->RegBitrateLsb ) );
+    SX1272FskSettings.Bitrate = ( uint16_t )( ( double )XTAL_FREQ / ( double )SX1272FskSettings.Bitrate );
 
-    return FskSettings.Bitrate;
+    return SX1272FskSettings.Bitrate;
 }
 
 void SX1272FskSetFdev( uint32_t fdev )
 {
-    FskSettings.Fdev = fdev;
+    SX1272FskSettings.Fdev = fdev;
 
     fdev = ( uint16_t )( ( double )fdev / ( double )FREQ_STEP );
     SX1272->RegFdevMsb    = ( uint8_t )( fdev >> 8 );
@@ -106,10 +106,10 @@ void SX1272FskSetFdev( uint32_t fdev )
 uint32_t SX1272FskGetFdev( void )
 {
     SX1272ReadBuffer( REG_FDEVMSB, &SX1272->RegFdevMsb, 2 );
-    FskSettings.Fdev = ( ( ( uint32_t )SX1272->RegFdevMsb << 8 ) | ( ( uint32_t )SX1272->RegFdevLsb ) );
-    FskSettings.Fdev = ( uint16_t )( ( double )FskSettings.Fdev * ( double )FREQ_STEP );
+    SX1272FskSettings.Fdev = ( ( ( uint32_t )SX1272->RegFdevMsb << 8 ) | ( ( uint32_t )SX1272->RegFdevLsb ) );
+    SX1272FskSettings.Fdev = ( uint16_t )( ( double )SX1272FskSettings.Fdev * ( double )FREQ_STEP );
 
-    return FskSettings.Fdev;
+    return SX1272FskSettings.Fdev;
 }
 
 void SX1272FskSetRFPower( int8_t power )
@@ -157,7 +157,7 @@ void SX1272FskSetRFPower( int8_t power )
         SX1272->RegPaConfig = ( SX1272->RegPaConfig & RF_PACONFIG_OUTPUTPOWER_MASK ) | ( uint8_t )( ( uint16_t )( power + 1 ) & 0x0F );
     }
     SX1272Write( REG_PACONFIG, SX1272->RegPaConfig );
-    FskSettings.Power = power;
+    SX1272FskSettings.Power = power;
 }
 
 int8_t SX1272FskGetRFPower( void )
@@ -169,18 +169,18 @@ int8_t SX1272FskGetRFPower( void )
     {
         if( ( SX1272->RegPaDac & 0x07 ) == 0x07 )
         {
-            FskSettings.Power = 5 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
+            SX1272FskSettings.Power = 5 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
         }
         else
         {
-            FskSettings.Power = 2 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
+            SX1272FskSettings.Power = 2 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
         }
     }
     else
     {
-        FskSettings.Power = -1 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
+        SX1272FskSettings.Power = -1 + ( SX1272->RegPaConfig & ~RF_PACONFIG_OUTPUTPOWER_MASK );
     }
-    return FskSettings.Power;
+    return SX1272FskSettings.Power;
 }
 
 /*!
@@ -275,12 +275,12 @@ void SX1272FskSetDccBw( uint8_t* reg, uint32_t dccValue, uint32_t rxBwValue )
     if( reg == &SX1272->RegRxBw )
     {
         SX1272Write( REG_RXBW, *reg );
-        FskSettings.RxBw = rxBwValue;
+        SX1272FskSettings.RxBw = rxBwValue;
     }
     else
     {
         SX1272Write( REG_AFCBW, *reg );
-        FskSettings.RxBwAfc = rxBwValue;
+        SX1272FskSettings.RxBwAfc = rxBwValue;
     }
 }
 
@@ -305,11 +305,11 @@ uint32_t SX1272FskGetBw( uint8_t* reg )
     rxBwValue = SX1272FskComputeRxBw( mantisse, ( uint8_t )*reg & 0x07 );
     if( reg == &SX1272->RegRxBw )
     {
-        return FskSettings.RxBw = rxBwValue;
+        return SX1272FskSettings.RxBw = rxBwValue;
     }
     else
     {
-        return FskSettings.RxBwAfc = rxBwValue;
+        return SX1272FskSettings.RxBwAfc = rxBwValue;
     }
 }
 
@@ -318,14 +318,14 @@ void SX1272FskSetPacketCrcOn( bool enable )
     SX1272Read( REG_PACKETCONFIG1, &SX1272->RegPacketConfig1 );
     SX1272->RegPacketConfig1 = ( SX1272->RegPacketConfig1 & RF_PACKETCONFIG1_CRC_MASK ) | ( enable << 4 );
     SX1272Write( REG_PACKETCONFIG1, SX1272->RegPacketConfig1 );
-    FskSettings.CrcOn = enable;
+    SX1272FskSettings.CrcOn = enable;
 }
 
 bool SX1272FskGetPacketCrcOn( void )
 {
     SX1272Read( REG_PACKETCONFIG1, &SX1272->RegPacketConfig1 );
-    FskSettings.CrcOn = ( SX1272->RegPacketConfig1 & RF_PACKETCONFIG1_CRC_ON ) >> 4;
-    return FskSettings.CrcOn;
+    SX1272FskSettings.CrcOn = ( SX1272->RegPacketConfig1 & RF_PACKETCONFIG1_CRC_ON ) >> 4;
+    return SX1272FskSettings.CrcOn;
 }
 
 void SX1272FskSetAfcOn( bool enable )
@@ -333,28 +333,28 @@ void SX1272FskSetAfcOn( bool enable )
     SX1272Read( REG_RXCONFIG, &SX1272->RegRxConfig );
     SX1272->RegRxConfig = ( SX1272->RegRxConfig & RF_RXCONFIG_AFCAUTO_MASK ) | ( enable << 4 );
     SX1272Write( REG_RXCONFIG, SX1272->RegRxConfig );
-    FskSettings.AfcOn = enable;
+    SX1272FskSettings.AfcOn = enable;
 }
 
 bool SX1272FskGetAfcOn( void )
 {
     SX1272Read( REG_RXCONFIG, &SX1272->RegRxConfig );
-    FskSettings.AfcOn = ( SX1272->RegRxConfig & RF_RXCONFIG_AFCAUTO_ON ) >> 4;
-    return FskSettings.AfcOn;
+    SX1272FskSettings.AfcOn = ( SX1272->RegRxConfig & RF_RXCONFIG_AFCAUTO_ON ) >> 4;
+    return SX1272FskSettings.AfcOn;
 }
 
 void SX1272FskSetPayloadLength( uint8_t value )
 {
     SX1272->RegPayloadLength = value;
     SX1272Write( REG_PAYLOADLENGTH, SX1272->RegPayloadLength );
-    FskSettings.PayloadLength = value;
+    SX1272FskSettings.PayloadLength = value;
 }
 
 uint8_t SX1272FskGetPayloadLength( void )
 {
     SX1272Read( REG_PAYLOADLENGTH, &SX1272->RegPayloadLength );
-    FskSettings.PayloadLength = SX1272->RegPayloadLength;
-    return FskSettings.PayloadLength;
+    SX1272FskSettings.PayloadLength = SX1272->RegPayloadLength;
+    return SX1272FskSettings.PayloadLength;
 }
 
 void SX1272FskSetPa20dBm( bool enale )

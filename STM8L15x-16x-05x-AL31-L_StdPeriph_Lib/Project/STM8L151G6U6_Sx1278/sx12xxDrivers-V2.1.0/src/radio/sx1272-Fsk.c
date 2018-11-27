@@ -34,9 +34,9 @@
 #include "sx1272-Fsk.h"
 
 // Default settings
-tFskSettings FskSettings = 
+tFskSettings SX1272FskSettings = 
 {
-    870000000,      // RFFrequency
+    432000000,      // RFFrequency
     9600,           // Bitrate
     50000,          // Fdev
     20,             // Power
@@ -131,7 +131,7 @@ void SX1272FskInit( void )
 
     SX1272->RegLna = RF_LNA_GAIN_G1 | RF_LNA_BOOST_ON;
 
-    if( FskSettings.AfcOn == true )
+    if( SX1272FskSettings.AfcOn == true )
     {
         SX1272->RegRxConfig = RF_RXCONFIG_RESTARTRXONCOLLISION_OFF | RF_RXCONFIG_AFCAUTO_ON |
                               RF_RXCONFIG_AGCAUTO_ON | RF_RXCONFIG_RXTRIGER_PREAMBLEDETECT;
@@ -159,27 +159,27 @@ void SX1272FskInit( void )
     SX1272->RegSyncValue4 = 0x96;
 
     SX1272->RegPacketConfig1 = RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE | RF_PACKETCONFIG1_DCFREE_OFF |
-                               ( FskSettings.CrcOn << 4 ) | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
+                               ( SX1272FskSettings.CrcOn << 4 ) | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
                                RF_PACKETCONFIG1_ADDRSFILTERING_OFF | RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT;
-    SX1272FskGetPacketCrcOn( ); // Update CrcOn on FskSettings
+    SX1272FskGetPacketCrcOn( ); // Update CrcOn on SX1272FskSettings
 
-    SX1272->RegPayloadLength = FskSettings.PayloadLength;
+    SX1272->RegPayloadLength = SX1272FskSettings.PayloadLength;
 
     // we can now update the registers with our configuration
     SX1272WriteBuffer( REG_OPMODE, SX1272Regs + 1, 0x70 - 1 );
 
     // then we need to set the RF settings 
-    SX1272FskSetRFFrequency( FskSettings.RFFrequency );
-    SX1272FskSetBitrate( FskSettings.Bitrate );
-    SX1272FskSetFdev( FskSettings.Fdev );
+    SX1272FskSetRFFrequency( SX1272FskSettings.RFFrequency );
+    SX1272FskSetBitrate( SX1272FskSettings.Bitrate );
+    SX1272FskSetFdev( SX1272FskSettings.Fdev );
 #if ( PLATFORM == SX12xxEiger )
     SX1272FskSetPa20dBm( true );
 #else
     SX1272FskSetPa20dBm( false );
 #endif
-    SX1272FskSetRFPower( FskSettings.Power );
-    SX1272FskSetDccBw( &SX1272->RegRxBw, 0, FskSettings.RxBw );
-    SX1272FskSetDccBw( &SX1272->RegAfcBw, 0, FskSettings.RxBwAfc );
+    SX1272FskSetRFPower( SX1272FskSettings.Power );
+    SX1272FskSetDccBw( &SX1272->RegRxBw, 0, SX1272FskSettings.RxBw );
+    SX1272FskSetDccBw( &SX1272->RegAfcBw, 0, SX1272FskSettings.RxBwAfc );
     SX1272FskSetRssiOffset( -6 );
 
     SX1272FskSetOpMode( RF_OPMODE_STANDBY );
@@ -358,7 +358,7 @@ uint32_t SX1272FskProcess( void )
     
         memset( RFBuffer, 0, ( size_t )RF_BUFFER_SIZE );
 
-        PacketTimeout = ( uint16_t )( round( ( 8.0 * ( ( double )SX1272FskGetPacketPayloadSize( ) ) / ( double )FskSettings.Bitrate ) * 1000.0 ) + 1.0 );
+        PacketTimeout = ( uint16_t )( round( ( 8.0 * ( ( double )SX1272FskGetPacketPayloadSize( ) ) / ( double )SX1272FskSettings.Bitrate ) * 1000.0 ) + 1.0 );
         PacketTimeout = PacketTimeout + ( PacketTimeout >> 1 ); // Set the Packet timeout as 1.5 times the full payload transmission time
 
         Preamble2SyncTimeout = PacketTimeout;

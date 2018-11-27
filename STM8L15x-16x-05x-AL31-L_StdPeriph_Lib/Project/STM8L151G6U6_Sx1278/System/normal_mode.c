@@ -5,92 +5,89 @@
 #include "timer.h"
 #include "cfg_parm.h"
 #include <stdio.h>
+#include <string.h>
+#include "platform.h"
 
-#define LORA_CODINGRATE                             1         // [1: 4/5,
-                                                              //  2: 4/6,
-                                                              //  3: 4/7,
-                                                              //  4: 4/8]
-#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT                         0         // Symbols
-#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_IQ_INVERSION_ON                        false
-typedef enum
-{
-    LOWPOWER,
-    RX,
-    RX_TIMEOUT,
-    RX_ERROR,
-    TX,
-    TX_TIMEOUT,
-}States_t;
+#define BUFFER_SIZE                                 9 // Define the payload size here
 
-#define RX_TIMEOUT_VALUE                            1000
 
-/*!
- * Radio events function pointer
- */
-static RadioEvents_t NormalModeRadioEvents;
-States_t NormalModeState = LOWPOWER;
-//__eeprom uint32_t factory = 'a';
-/*!
- * \brief Function to be executed on Radio Tx Done event
- */
-void NormalModeOnTxDone( void );
+static uint16_t BufferSize = BUFFER_SIZE;			// RF buffer size
+static uint8_t Buffer[BUFFER_SIZE];					// RF buffer
 
-/*!
- * \brief Function to be executed on Radio Rx Done event
- */
-void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr );
+static uint8_t EnableMaster = true; 				// Master/Slave selection
 
-/*!
- * \brief Function executed on Radio Tx Timeout event
- */
-void NormalModeOnTxTimeout( void );
-
-/*!
- * \brief Function executed on Radio Rx Timeout event
- */
-void NormalModeOnRxTimeout( void );
-
-/*!
- * \brief Function executed on Radio Rx Error event
- */
-void NormalModeOnRxError( void );
-
+const uint8_t PingMsg[] = "PING";
+const uint8_t PongMsg[] = "PONG";
 
 void normal_mode_routin(void)
 {
     static char RadioTxBuffer[58];
     uint8_t RadioTxLen = 0;
     TimerTime_t timestamp;
-    // cfg gpio & radio    
-    // Radio initialization
-    NormalModeRadioEvents.TxDone = NormalModeOnTxDone;
-    NormalModeRadioEvents.RxDone = NormalModeOnRxDone;
-    NormalModeRadioEvents.TxTimeout = NormalModeOnTxTimeout;
-    NormalModeRadioEvents.RxTimeout = NormalModeOnRxTimeout;
-    NormalModeRadioEvents.RxError = NormalModeOnRxError;
     BoardDisableIrq();
     TIM4_Config();
     RTC_Config();
-    Radio.Init( &NormalModeRadioEvents );
-    //factory = 433000000;
-    Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
-                                   cfg_parm_get_air_sf(), LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
-
-    Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
-    Radio.Rx( 0 ); // 0: receive RxContinuous
     ComportInit();
     BoardEnableIrq();
+    Radio->Init( );
+    Radio->StartRx( );
     printf("normal\r\n");
     while(GetRunModePin() == En_Normal_Mode)
     {
+        uint8_t i;
+        
+        switch( Radio->Process( ) )
+        {
+        case RF_RX_TIMEOUT:
+            // Send the next PING frame
+            Buffer[0] = 'P';
+            Buffer[1] = 'I';
+            Buffer[2] = 'N';
+            Buffer[3] = 'G';
+            for( i = 4; i < BufferSize; i++ )
+            {
+                Buffer[i] = i - 4;
+            }
+            Radio->SetTxPacket( Buffer, BufferSize );
+            break;
+        case RF_RX_DONE:
+            Radio->GetRxPacket( Buffer, ( uint16_t* )&BufferSize );
+        
+            if( BufferSize > 0 )
+            {
+                if( strncmp( ( const char* )Buffer, ( const char* )PongMsg, 4 ) == 0 )
+                {
+                    // Indicates on a LED that the received frame is a PONG
+                    //LedToggle( LED_GREEN );
+
+                    // Send the next PING frame            
+                    Buffer[0] = 'P';
+                    Buffer[1] = 'I';
+                    Buffer[2] = 'N';
+                    Buffer[3] = 'G';
+                    // We fill the buffer with numbers for the payload 
+                    for( i = 4; i < BufferSize; i++ )
+                    {
+                        Buffer[i] = i - 4;
+                    }
+                    Radio->SetTxPacket( Buffer, BufferSize );
+                }
+                else if( strncmp( ( const char* )Buffer, ( const char* )PingMsg, 4 ) == 0 )
+                { // A master already exists then become a slave
+                    EnableMaster = false;
+                    //LedOff( LED_RED );
+                }
+            }            
+            break;
+        case RF_TX_DONE:
+            // Indicates on a LED that we have sent a PING
+            //LedToggle( LED_RED );
+            Radio->StartRx( );
+            break;
+        default:
+            break;
+        }
+#if 0
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))
         {
             RadioTxLen = ring_buffer_num_items(&uart_rx_ring_buf);
@@ -101,64 +98,9 @@ void normal_mode_routin(void)
             if((RadioTxLen >= 58) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
             {
                 BoardDisableIrq();
-                if(Radio.GetStatus() != RF_TX_RUNNING)
-                {
-                    RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
-                    //BoardDisableIrq();
-                    Radio.Sleep( );
-                    Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
-                    /*for(int i = 0;i < RadioTxLen;i ++)
-                    {
-                        putchar(RadioTxBuffer[i]);
-                    }*/
-                    //BoardEnableIrq();
-                }
                 BoardEnableIrq();
             }
         }
+#endif
     }
-}
-
-void NormalModeOnTxDone( void )
-{
-    Radio.Sleep( );
-    Radio.Rx( 0 );
-    NormalModeState = TX;
-}
-
-void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
-{
-    char temp = 0;
-    
-    ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
-    Radio.Sleep( );
-    Radio.Rx( 0 );
-    if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
-    {
-        ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
-        USART_SendData8(USART1, temp);
-        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-    }
-}
-
-void NormalModeOnTxTimeout( void )
-{
-    Radio.Sleep( );
-    Radio.Rx( 0 );
-    NormalModeState = TX_TIMEOUT;
-    printf("txtimeout\r\n");
-}
-
-void NormalModeOnRxTimeout( void )
-{
-    Radio.Sleep( );
-    Radio.Rx( 0 );
-    NormalModeState = RX_TIMEOUT;
-}
-
-void NormalModeOnRxError( void )
-{
-    Radio.Sleep( );
-    Radio.Rx( 0 );
-    NormalModeState = RX_ERROR;
 }

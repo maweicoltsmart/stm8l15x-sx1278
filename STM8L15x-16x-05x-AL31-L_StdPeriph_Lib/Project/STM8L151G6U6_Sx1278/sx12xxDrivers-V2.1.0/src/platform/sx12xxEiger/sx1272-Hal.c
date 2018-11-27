@@ -18,207 +18,26 @@
  *
  * Last modified by Miguel Luis on Jun 19 2013
  */
-#include <stdint.h>
+#include "board.h"
 #include <stdbool.h> 
 
 #include "platform.h"
 
 #if defined( USE_SX1272_RADIO )
 
-#include "ioe.h"
-#include "spi.h"
-#include "../../radio/sx1272-Hal.h"
+#include "sx1272-Hal.h"
 
-/*!
- * SX1272 RESET I/O definitions
- */
-#if defined( STM32F4XX ) || defined( STM32F2XX ) 
-#define RESET_IOPORT                                GPIOG
-#define RESET_PIN                                   GPIO_Pin_12
-#elif defined( STM32F429_439xx )
-#define RESET_IOPORT                                GPIOG
-#define RESET_PIN                                   GPIO_Pin_12
-#else
-#define RESET_IOPORT                                GPIOA
-#define RESET_PIN                                   GPIO_Pin_1
-#endif
-
-/*!
- * SX1272 SPI NSS I/O definitions
- */
-#if defined( STM32F4XX ) || defined( STM32F2XX )
-#define NSS_IOPORT                                  GPIOA
-#define NSS_PIN                                     GPIO_Pin_15
-#elif defined( STM32F429_439xx )
-#define NSS_IOPORT                                  GPIOA
-#define NSS_PIN                                     GPIO_Pin_4
-#else
-#define NSS_IOPORT                                  GPIOA
-#define NSS_PIN                                     GPIO_Pin_15
-#endif
-
-/*!
- * SX1272 DIO pins  I/O definitions
- */
-#if defined( STM32F4XX ) || defined( STM32F2XX ) 
-#define DIO0_IOPORT                                 GPIOG
-#define DIO0_PIN                                    GPIO_Pin_13
-#elif defined( STM32F429_439xx )
-#define DIO0_IOPORT                                 GPIOG
-#define DIO0_PIN                                    GPIO_Pin_13
-#else
-#define DIO0_IOPORT                                 GPIOA
-#define DIO0_PIN                                    GPIO_Pin_0
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX )
-#define DIO1_IOPORT                                 GPIOB
-#define DIO1_PIN                                    GPIO_Pin_8
-#elif defined( STM32F429_439xx )
-#define DIO1_IOPORT                                 GPIOB
-#define DIO1_PIN                                    GPIO_Pin_7
-#else
-#define DIO1_IOPORT                                 GPIOB
-#define DIO1_PIN                                    GPIO_Pin_0
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) 
-#define DIO2_IOPORT                                 GPIOA
-#define DIO2_PIN                                    GPIO_Pin_2
-#elif defined( STM32F429_439xx )
-#define DIO2_IOPORT                                 GPIOA
-#define DIO2_PIN                                    GPIO_Pin_2
-#else
-#define DIO2_IOPORT                                 GPIOC
-#define DIO2_PIN                                    GPIO_Pin_5
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-#define DIO3_IOPORT                                 
-#define DIO3_PIN                                    RF_DIO3_PIN
-#else
-#define DIO3_IOPORT                                 
-#define DIO3_PIN                                    RF_DIO3_PIN
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-#define DIO4_IOPORT                                 
-#define DIO4_PIN                                    RF_DIO4_PIN
-#else
-#define DIO4_IOPORT                                 
-#define DIO4_PIN                                    RF_DIO4_PIN
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-#define DIO5_IOPORT                                 
-#define DIO5_PIN                                    RF_DIO5_PIN
-#else
-#define DIO5_IOPORT                                 
-#define DIO5_PIN                                    RF_DIO5_PIN
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-#define RXTX_IOPORT                                 
-#define RXTX_PIN                                    FEM_CTX_PIN
-#else
-#define RXTX_IOPORT                                 
-#define RXTX_PIN                                    FEM_CTX_PIN
-#endif
-
+#define DIO0_IOPORT                                 SX1278_DIO0_PORT
+#define DIO0_PIN                                    SX1278_DIO0_PIN
+#define RXTX_IOPORT                                 SX1278_RF_SWITCH_PORT
+#define RXTX_PIN                                    SX1278_RF_SWITCH_PIN
 
 void SX1272InitIo( void )
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-    RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB |
-                            RCC_AHB1Periph_GPIOG, ENABLE );
-#else
-    RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
-                            RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE );
-#endif
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-#else
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-#endif
-    
-    // Configure NSS as output
-    GPIO_WriteBit( NSS_IOPORT, NSS_PIN, Bit_SET );
-    GPIO_InitStructure.GPIO_Pin = NSS_PIN;
-    GPIO_Init( NSS_IOPORT, &GPIO_InitStructure );
-
-    // Configure radio DIO as inputs
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-#else
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-#endif
-
-    // Configure DIO0
-    GPIO_InitStructure.GPIO_Pin =  DIO0_PIN;
-    GPIO_Init( DIO0_IOPORT, &GPIO_InitStructure );
-    
-    // Configure DIO1
-    GPIO_InitStructure.GPIO_Pin =  DIO1_PIN;
-    GPIO_Init( DIO1_IOPORT, &GPIO_InitStructure );
-    
-    // Configure DIO2
-    GPIO_InitStructure.GPIO_Pin =  DIO2_PIN;
-    GPIO_Init( DIO2_IOPORT, &GPIO_InitStructure );
-    
-    // REAMARK: DIO3/4/5 configured are connected to IO expander
-
-    // Configure DIO3 as input
-    
-    // Configure DIO4 as input
-    
-    // Configure DIO5 as input
 }
 
 void SX1272SetReset( uint8_t state )
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    if( state == RADIO_RESET_ON )
-    {
-        // Set RESET pin to 1
-        GPIO_WriteBit( RESET_IOPORT, RESET_PIN, Bit_SET );
-
-        // Configure RESET as output
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-#else
-
-        GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
-#endif        
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_InitStructure.GPIO_Pin = RESET_PIN;
-        GPIO_Init( RESET_IOPORT, &GPIO_InitStructure );
-    }
-    else
-    {
-#if FPGA == 0    
-        // Configure RESET as input
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-#else
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-#endif        
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_InitStructure.GPIO_Pin =  RESET_PIN;
-        GPIO_Init( RESET_IOPORT, &GPIO_InitStructure );
-#else
-        GPIO_WriteBit( RESET_IOPORT, RESET_PIN, Bit_RESET );
-#endif
-    }
 }
 
 void SX1272Write( uint8_t addr, uint8_t data )
@@ -235,8 +54,8 @@ void SX1272WriteBuffer( uint8_t addr, uint8_t *buffer, uint8_t size )
 {
     uint8_t i;
 
-    //NSS = 0;
-    GPIO_WriteBit( NSS_IOPORT, NSS_PIN, Bit_RESET );
+    //GpioWrite( &SX1276.Spi.Nss, 0 );
+    GPIO_ResetBits(SPI_NSS_PORT, SPI_NSS_PIN); /* CS pin low */
 
     SpiInOut( addr | 0x80 );
     for( i = 0; i < size; i++ )
@@ -244,8 +63,8 @@ void SX1272WriteBuffer( uint8_t addr, uint8_t *buffer, uint8_t size )
         SpiInOut( buffer[i] );
     }
 
-    //NSS = 1;
-    GPIO_WriteBit( NSS_IOPORT, NSS_PIN, Bit_SET );
+    //GpioWrite( &SX1276.Spi.Nss, 1 );
+    GPIO_SetBits(SPI_NSS_PORT, SPI_NSS_PIN); /* CS pin high */
 }
 
 void SX1272ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size )
@@ -253,7 +72,8 @@ void SX1272ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size )
     uint8_t i;
 
     //NSS = 0;
-    GPIO_WriteBit( NSS_IOPORT, NSS_PIN, Bit_RESET );
+    //GpioWrite( &SX1276.Spi.Nss, 0 );
+    GPIO_ResetBits(SPI_NSS_PORT, SPI_NSS_PIN); /* CS pin low */
 
     SpiInOut( addr & 0x7F );
 
@@ -263,7 +83,8 @@ void SX1272ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size )
     }
 
     //NSS = 1;
-    GPIO_WriteBit( NSS_IOPORT, NSS_PIN, Bit_SET );
+    //GpioWrite( &SX1276.Spi.Nss, 1 );
+    GPIO_SetBits(SPI_NSS_PORT, SPI_NSS_PIN); /* CS pin high */
 }
 
 void SX1272WriteFifo( uint8_t *buffer, uint8_t size )
@@ -278,43 +99,41 @@ void SX1272ReadFifo( uint8_t *buffer, uint8_t size )
 
 inline uint8_t SX1272ReadDio0( void )
 {
-    return GPIO_ReadInputDataBit( DIO0_IOPORT, DIO0_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO0_PORT, SX1278_DIO0_PIN)?1:0;
 }
 
 inline uint8_t SX1272ReadDio1( void )
 {
-    return GPIO_ReadInputDataBit( DIO1_IOPORT, DIO1_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO1_PORT, SX1278_DIO1_PIN)?1:0;
 }
 
 inline uint8_t SX1272ReadDio2( void )
 {
-    return GPIO_ReadInputDataBit( DIO2_IOPORT, DIO2_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO2_PORT, SX1278_DIO2_PIN)?1:0;
 }
 
 inline uint8_t SX1272ReadDio3( void )
 {
-    return IoePinGet( RF_DIO3_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO3_PORT, SX1278_DIO3_PIN)?1:0;
 }
 
 inline uint8_t SX1272ReadDio4( void )
 {
-    return IoePinGet( RF_DIO4_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO4_PORT, SX1278_DIO4_PIN)?1:0;
 }
 
 inline uint8_t SX1272ReadDio5( void )
 {
-    return IoePinGet( RF_DIO5_PIN );
+    return GPIO_ReadInputDataBit(SX1278_DIO5_PORT, SX1278_DIO5_PIN)?1:0;
 }
 
 inline void SX1272WriteRxTx( uint8_t txEnable )
 {
     if( txEnable != 0 )
     {
-        IoePinOn( FEM_CTX_PIN );
     }
     else
     {
-        IoePinOff( FEM_CTX_PIN );
     }
 }
 

@@ -19,24 +19,8 @@
 #ifndef __SX12XXEIGER_H__
 #define __SX12XXEIGER_H__
 
-#include <stdint.h>
+#include "stm8l15x.h"
 #include <stdbool.h>
-
-#if defined( STM32F4XX ) || defined( STM32F429_439xx )
-    #include "stm32f4xx.h"
-#elif defined( STM32F2XX )
-    #include "stm32f2xx.h"
-#else
-    #include "stm32f10x.h"
-#endif
-
-#define USE_USB                                     1
-
-#if defined( STM32F4XX ) || defined( STM32F2XX ) || defined( STM32F429_439xx )
-#define BACKUP_REG_BOOTLOADER                       RTC_BKP_DR0      /* Booloader enter*/
-#else
-#define BACKUP_REG_BOOTLOADER                       BKP_DR1          /* Booloader enter*/
-#endif
 
 #define FW_VERSION                                  "2.1.0"
 #define SK_NAME                                     "SX12xxEiger"

@@ -20,7 +20,7 @@
  */
 #include <string.h>
 #include <math.h>
-
+#include "board.h"
 #include "platform.h"
 
 #if defined( USE_SX1276_RADIO )
@@ -34,9 +34,9 @@
 #include "sx1276-Fsk.h"
 
 // Default settings
-tFskSettings FskSettings = 
+tFskSettings SX1276FskSettings = 
 {
-    870000000,      // RFFrequency
+    433000000,      // RFFrequency
     9600,           // Bitrate
     50000,          // Fdev
     20,             // Power
@@ -127,7 +127,7 @@ void SX1276FskInit( void )
     SX1276->RegLna = RF_LNA_GAIN_G1;
     SX1276Write( REG_LNA, SX1276->RegLna );
 
-    if( FskSettings.AfcOn == true )
+    if( SX1276FskSettings.AfcOn == true )
     {
         SX1276->RegRxConfig = RF_RXCONFIG_RESTARTRXONCOLLISION_OFF | RF_RXCONFIG_AFCAUTO_ON |
                               RF_RXCONFIG_AGCAUTO_ON | RF_RXCONFIG_RXTRIGER_PREAMBLEDETECT;
@@ -155,53 +155,53 @@ void SX1276FskInit( void )
     SX1276->RegSyncValue4 = 0x96;
 
     SX1276->RegPacketConfig1 = RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE | RF_PACKETCONFIG1_DCFREE_OFF |
-                               ( FskSettings.CrcOn << 4 ) | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
+                               ( SX1276FskSettings.CrcOn << 4 ) | RF_PACKETCONFIG1_CRCAUTOCLEAR_ON |
                                RF_PACKETCONFIG1_ADDRSFILTERING_OFF | RF_PACKETCONFIG1_CRCWHITENINGTYPE_CCITT;
-    SX1276FskGetPacketCrcOn( ); // Update CrcOn on FskSettings
+    SX1276FskGetPacketCrcOn( ); // Update CrcOn on SX1276FskSettings
 
-    SX1276->RegPayloadLength = FskSettings.PayloadLength;
+    SX1276->RegPayloadLength = SX1276FskSettings.PayloadLength;
 
     // we can now update the registers with our configuration
     SX1276WriteBuffer( REG_OPMODE, SX1276Regs + 1, 0x70 - 1 );
 
     // then we need to set the RF settings 
-    SX1276FskSetRFFrequency( FskSettings.RFFrequency );
-    SX1276FskSetBitrate( FskSettings.Bitrate );
-    SX1276FskSetFdev( FskSettings.Fdev );
+    SX1276FskSetRFFrequency( SX1276FskSettings.RFFrequency );
+    SX1276FskSetBitrate( SX1276FskSettings.Bitrate );
+    SX1276FskSetFdev( SX1276FskSettings.Fdev );
 
-    SX1276FskSetDccBw( &SX1276->RegRxBw, 0, FskSettings.RxBw );
-    SX1276FskSetDccBw( &SX1276->RegAfcBw, 0, FskSettings.RxBwAfc );
+    SX1276FskSetDccBw( &SX1276->RegRxBw, 0, SX1276FskSettings.RxBw );
+    SX1276FskSetDccBw( &SX1276->RegAfcBw, 0, SX1276FskSettings.RxBwAfc );
     SX1276FskSetRssiOffset( 0 );
 
 #if( ( MODULE_SX1276RF1IAS == 1 ) || ( MODULE_SX1276RF1KAS == 1 ) )
-    if( FskSettings.RFFrequency > 860000000 )
+    if( SX1276FskSettings.RFFrequency > 860000000 )
     {
         SX1276FskSetPAOutput( RF_PACONFIG_PASELECT_RFO );
         SX1276FskSetPa20dBm( false );
-        FskSettings.Power = 14;
-        SX1276FskSetRFPower( FskSettings.Power );
+        SX1276FskSettings.Power = 14;
+        SX1276FskSetRFPower( SX1276FskSettings.Power );
     }
     else
     {
         SX1276FskSetPAOutput( RF_PACONFIG_PASELECT_PABOOST );
         SX1276FskSetPa20dBm( true );
-        FskSettings.Power = 20;
-        SX1276FskSetRFPower( FskSettings.Power );
+        SX1276FskSettings.Power = 20;
+        SX1276FskSetRFPower( SX1276FskSettings.Power );
     } 
 #elif( MODULE_SX1276RF1JAS == 1 )
-    if( FskSettings.RFFrequency > 860000000 )
+    if( SX1276FskSettings.RFFrequency > 860000000 )
     {
         SX1276FskSetPAOutput( RF_PACONFIG_PASELECT_PABOOST );
         SX1276FskSetPa20dBm( true );
-        FskSettings.Power = 20;
-        SX1276FskSetRFPower( FskSettings.Power );
+        SX1276FskSettings.Power = 20;
+        SX1276FskSetRFPower( SX1276FskSettings.Power );
     }
     else
     {
         SX1276FskSetPAOutput( RF_PACONFIG_PASELECT_RFO );
         SX1276FskSetPa20dBm( false );
-        FskSettings.Power = 14;
-        SX1276FskSetRFPower( FskSettings.Power );
+        SX1276FskSettings.Power = 14;
+        SX1276FskSetRFPower( SX1276FskSettings.Power );
     } 
 #endif
 
@@ -384,7 +384,7 @@ uint32_t SX1276FskProcess( void )
     
         memset( RFBuffer, 0, ( size_t )RF_BUFFER_SIZE );
 
-        PacketTimeout = ( uint16_t )( round( ( 8.0 * ( ( double )SX1276FskGetPacketPayloadSize( ) ) / ( double )FskSettings.Bitrate ) * 1000.0 ) + 1.0 );
+        PacketTimeout = ( uint16_t )( round( ( 8.0 * ( ( double )SX1276FskGetPacketPayloadSize( ) ) / ( double )SX1276FskSettings.Bitrate ) * 1000.0 ) + 1.0 );
         PacketTimeout = PacketTimeout + ( PacketTimeout >> 1 ); // Set the Packet timeout as 1.5 times the full payload transmission time
 
         Preamble2SyncTimeout = PacketTimeout;

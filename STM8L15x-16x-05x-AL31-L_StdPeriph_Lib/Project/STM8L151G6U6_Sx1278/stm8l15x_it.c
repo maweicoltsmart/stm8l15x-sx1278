@@ -32,7 +32,6 @@
 #include "ring_buf.h"
 #include "delay.h"
 #include "board.h"
-#include "sx1276-board.h"
 #include <stdio.h>
 
 /** @addtogroup STM8L15x_StdPeriph_Template
@@ -122,7 +121,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
     */
     /* Clear the periodic wakeup unit flag */
     RTC_ClearITPendingBit(RTC_IT_WUT);
-    Radio.StartCad();
+    //Radio.StartCad();
     //halt(); // this cmd will let stack over flow, because the interrupt never return
 }
 /**
@@ -239,7 +238,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     }
     else
     {
-        SX1276OnDio3Irq( NULL );
+        //SX1276OnDio3Irq( NULL );
     }
 }
 
@@ -254,7 +253,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
        it is recommended to set a breakpoint on the following instruction.
     */
     EXTI_ClearITPendingBit(SX1278_DIO2_EXTI_IT_PIN);
-    SX1276OnDio2Irq( NULL );
+    //SX1276OnDio2Irq( NULL );
 }
 
 /**
@@ -268,7 +267,7 @@ INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
        it is recommended to set a breakpoint on the following instruction.
     */
     EXTI_ClearITPendingBit(SX1278_DIO1_EXTI_IT_PIN);
-    SX1276OnDio1Irq( NULL );
+    //SX1276OnDio1Irq( NULL );
 }
 
 /**
@@ -282,7 +281,7 @@ INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
        it is recommended to set a breakpoint on the following instruction.
     */
     EXTI_ClearITPendingBit(SX1278_DIO0_EXTI_IT_PIN);
-    SX1276OnDio0Irq( NULL );
+    //SX1276OnDio0Irq( NULL );
     //SX1276OnDio5Irq( NULL );
 }
 
@@ -297,7 +296,7 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
        it is recommended to set a breakpoint on the following instruction.
     */
     EXTI_ClearITPendingBit(SX1278_DIO4_EXTI_IT_PIN);
-    SX1276OnDio4Irq( NULL );
+    //SX1276OnDio4Irq( NULL );
 }
 
 /**

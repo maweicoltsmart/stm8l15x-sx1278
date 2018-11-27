@@ -24,7 +24,7 @@
 /*!
  * SX1272 LoRa General parameters definition
  */
-typedef struct sLoRaSettings
+typedef struct sSX1272LoRaSettings
 {
     uint32_t RFFrequency;
     int8_t Power;
@@ -39,7 +39,7 @@ typedef struct sLoRaSettings
     uint32_t TxPacketTimeout;
     uint32_t RxPacketTimeout;
     uint8_t PayloadLength;
-}tLoRaSettings;
+}tSX1272LoRaSettings;
 
 /*!
  * RF packet definition

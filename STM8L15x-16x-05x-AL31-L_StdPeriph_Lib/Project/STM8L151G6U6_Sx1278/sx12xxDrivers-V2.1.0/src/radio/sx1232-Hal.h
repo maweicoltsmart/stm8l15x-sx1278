@@ -21,7 +21,9 @@
 #ifndef __SX1232_HAL_H__
 #define __SX1232_HAL_H__
 
-#include "ioe.h"
+#include "board.h"
+#include "timer.h"
+
 /*!
  * DIO state read functions mapping
  */
@@ -33,7 +35,7 @@
 #define DIO5                                        SX1232ReadDio5( )
 
 
-#define GET_TICK_COUNT( )                           ( TickCounter )
+#define GET_TICK_COUNT( )                           TimerGetCurrentTime()
 #define TICK_RATE_MS( ms )                          ( ms )
 
 typedef enum

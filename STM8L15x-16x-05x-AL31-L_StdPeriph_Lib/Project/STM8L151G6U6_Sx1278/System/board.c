@@ -1,12 +1,11 @@
 #include "board.h"
 #include "comport.h"
-#include "spi-board.h"
-#include "sx1276-board.h"
 #include "cfg_parm.h"
 #include "delay.h"
 #include "system.h"
 #include <math.h>
 #include <stdio.h>
+#include "radio.h"
 
 /**
   * @brief  Configure TIM4 peripheral   
@@ -14,7 +13,32 @@
   * @retval None
   */
 #define TIM4_PERIOD       124
-__IO uint32_t TimingDelay;
+tRadioDriver* Radio = NULL;
+
+void SpiInit( void )
+{
+    /* Enable SPI clock */
+    CLK_PeripheralClockConfig(CLK_Peripheral_SPI1, ENABLE);
+    //GPIO_Init(SPI_NSS_PORT, SPI_NSS_PIN, GPIO_Mode_Out_PP_High_Fast); //NSS片选
+    //GPIO_Init(SPI_SCK_PORT, SPI_SCK_PIN, GPIO_Mode_Out_PP_High_Fast); //SCK
+    //GPIO_Init(SPI_MOSI_PORT, SPI_MOSI_PIN, GPIO_Mode_Out_PP_High_Fast); //MOSI
+    //主机模式，配置为输入  
+    //GPIO_Init(SPI_MISO_PORT, SPI_MISO_PIN, GPIO_Mode_In_PU_No_IT); //MISO
+    /* Set the MOSI,MISO and SCK at high level */
+    GPIO_ExternalPullUpConfig(GPIOB, SPI_NSS_PIN | SPI_SCK_PIN| \
+                              SPI_MOSI_PIN | SPI_MISO_PIN, ENABLE);
+    /* SX1278_SPI Config */
+    SPI_Init(SPI1, SPI_FirstBit_MSB, SPI_BaudRatePrescaler_2, SPI_Mode_Master,
+             SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_Direction_2Lines_FullDuplex,
+             SPI_NSS_Soft, 0x07);
+
+
+    /* SX1278_SPI enable */
+    SPI_Cmd(SPI1, ENABLE);
+
+    /* Set MSD ChipSelect pin in Output push-pull high level */
+    GPIO_Init(SPI_NSS_PORT, SPI_NSS_PIN, GPIO_Mode_Out_PP_High_Fast);
+}
 
 void RTC_Config(void)
 {
@@ -145,7 +169,8 @@ void BoardInitMcu( void )
     BEEP_LSClockToTIMConnectCmd(ENABLE);
     BEEP_LSICalibrationConfig(32768);
     SpiInit( );
-    SX1276IoInit( );
+    //SX1276IoInit( );
+    Radio = RadioDriverInit( );
     BoardEnableIrq();
 }
 
@@ -160,4 +185,24 @@ void caculatebps(void)
           printf("bandwith = %f, sf = %d, tsym = %f, bps = %f\r\n",bandwith[i],sf_array[j],(float)pow(2,sf_array[j]) / bandwith[i],1.0 / ((float)pow(2,sf_array[j]) / bandwith[i]));
       }
   }
+}
+
+uint16_t SpiInOut( uint16_t outData )
+{
+    uint16_t result;
+    
+    BoardDisableIrq();
+    /* Loop while DR register in not emplty */
+    while (SPI_GetFlagStatus(SPI1, SPI_FLAG_TXE) == RESET);
+
+    /* Send byte through the SPI peripheral */
+    SPI_SendData(SPI1, outData);
+
+    /* Wait to receive a byte */
+    while (SPI_GetFlagStatus(SPI1, SPI_FLAG_RXNE) == RESET);
+
+    /* Return the byte read from the SPI bus */
+    result = SPI_ReceiveData(SPI1);
+    BoardEnableIrq();
+    return result;
 }

@@ -1,6 +1,7 @@
 #ifndef __BOARD_H__
 #define __BOARD_H__
 #include "stm8l15x.h"
+#include "radio.h"
 
 typedef enum{
     En_Normal_Mode         = (uint8_t)0x00,
@@ -88,10 +89,13 @@ typedef enum{
 #define SX1278_TEST_PORT        GPIOD
 #define SX1278_TEST_PIN         GPIO_Pin_0
 
+extern tRadioDriver* Radio;
+
 void InitRunModePin(void);
 void BoardInitMcu( void );
 Run_Mode_Type GetRunModePin(void);
 void RTC_Config(void);
 void TIM4_Config(void);
+uint16_t SpiInOut( uint16_t outData );
 
 #endif

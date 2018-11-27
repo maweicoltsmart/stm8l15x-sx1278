@@ -8,8 +8,6 @@
 #include "delay.h"
 #include <stdio.h>
 
-static RadioEvents_t ConfigModeRadioEvents;
-
 void config_mode_routin(void)
 {
     char cmdbyte;
@@ -18,22 +16,11 @@ void config_mode_routin(void)
     PWR_UltraLowPowerCmd(DISABLE); // TIM2 ±÷”ª·”–—”≥Ÿ
     BoardDisableIrq();
     TIM4_Config();
-    ConfigModeRadioEvents.TxDone = NULL;
-    ConfigModeRadioEvents.RxDone = NULL;
-    ConfigModeRadioEvents.TxTimeout = NULL;
-    ConfigModeRadioEvents.RxTimeout = NULL;
-    ConfigModeRadioEvents.RxError = NULL;
-    ConfigModeRadioEvents.CadDone = NULL;
-
     RTC_Config();
 
-    Radio.Init( &ConfigModeRadioEvents );
-    Radio.Sleep( );
     ComportInit();
     BoardEnableIrq();
     printf("config\r\n");
-    // cfg gpio & radio
-    //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_Low_Fast); // AUX mode output
     while(GetRunModePin() == En_Config_Mode)
     {
@@ -128,5 +115,4 @@ void config_mode_routin(void)
             }
         }
     }
-    // reset mcu and get run mode again
 }

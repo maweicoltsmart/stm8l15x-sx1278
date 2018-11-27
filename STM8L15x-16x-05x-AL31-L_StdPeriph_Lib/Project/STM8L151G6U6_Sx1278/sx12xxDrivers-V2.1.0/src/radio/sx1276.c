@@ -34,8 +34,8 @@
  */
 uint8_t SX1276Regs[0x70];
 
-static bool LoRaOn = false;
-static bool LoRaOnState = false;
+static uint8_t LoRaOn = false;
+static uint8_t LoRaOnState = false;
 
 void SX1276Init( void )
 {
@@ -82,7 +82,7 @@ void SX1276Reset( void )
     while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 6 ) );    
 }
 
-void SX1276SetLoRaOn( bool enable )
+void SX1276SetLoRaOn( uint8_t enable )
 {
     if( LoRaOnState == enable )
     {
@@ -120,7 +120,7 @@ void SX1276SetLoRaOn( bool enable )
     }
 }
 
-bool SX1276GetLoRaOn( void )
+uint8_t SX1276GetLoRaOn( void )
 {
     return LoRaOn;
 }

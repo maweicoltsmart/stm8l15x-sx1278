@@ -21,20 +21,13 @@
 #ifndef __SX1272_HAL_H__
 #define __SX1272_HAL_H__
 
-/*!
- * DIO state read functions mapping
- */
-#define DIO0                                        SX1272ReadDio0( )
-#define DIO1                                        SX1272ReadDio1( )
-#define DIO2                                        SX1272ReadDio2( )
-#define DIO3                                        SX1272ReadDio3( )
-#define DIO4                                        SX1272ReadDio4( )
-#define DIO5                                        SX1272ReadDio5( )
+#include "board.h"
+#include "timer.h"
 
 // RXTX pin control see errata note
 #define RXTX( txEnable )                            SX1272WriteRxTx( txEnable );
 
-#define GET_TICK_COUNT( )                           ( TickCounter )
+#define GET_TICK_COUNT( )                           TimerGetCurrentTime()
 #define TICK_RATE_MS( ms )                          ( ms )
 
 typedef enum
@@ -155,5 +148,15 @@ inline uint8_t SX1272ReadDio5( void );
  * \param [IN] txEnable [1: Tx, 0: Rx]
  */
 inline void SX1272WriteRxTx( uint8_t txEnable );
+
+/*!
+ * DIO state read functions mapping
+ */
+#define DIO0                                        SX1272ReadDio0( )
+#define DIO1                                        SX1272ReadDio1( )
+#define DIO2                                        SX1272ReadDio2( )
+#define DIO3                                        SX1272ReadDio3( )
+#define DIO4                                        SX1272ReadDio4( )
+#define DIO5                                        SX1272ReadDio5( )
 
 #endif //__SX1272_HAL_H__

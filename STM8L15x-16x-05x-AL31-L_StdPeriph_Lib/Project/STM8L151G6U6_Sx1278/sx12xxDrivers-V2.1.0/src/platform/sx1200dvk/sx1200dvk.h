@@ -19,7 +19,7 @@
 #ifndef __SX1200DVK_H__
 #define __SX1200DVK_H__
 
-#include "stm32f10x.h"
+#include "board.h"
 
 #define FW_VERSION									"1.0.0"
 
@@ -28,16 +28,16 @@
  */
 typedef enum
 {
-    SX_OK          
-    SX_ERROR       
-    SX_BUSY        
-    SX_EMPTY       
-    SX_DONE        
-    SX_TIMEOUT     
-    SX_UNSUPPORTED 
-    SX_WAIT        
-    SX_CLOSE       
-    SX_YES         
+    SX_OK,
+    SX_ERROR,
+    SX_BUSY,
+    SX_EMPTY,
+    SX_DONE,
+    SX_TIMEOUT,
+    SX_UNSUPPORTED,
+    SX_WAIT,
+    SX_CLOSE,
+    SX_YES,
     SX_NO          
 }tReturnCodes;
 
