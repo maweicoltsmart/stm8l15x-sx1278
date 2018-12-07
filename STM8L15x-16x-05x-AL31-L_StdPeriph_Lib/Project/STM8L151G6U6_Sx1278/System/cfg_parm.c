@@ -142,31 +142,31 @@ float cfg_parm_get_air_baud(void)
     switch(stTmpCfgParm.speed.speedbit.radio_baud)
     {
         case 0:
-          airbaud = 244.140620; //300 125k sf = 9
+          airbaud = 61.035156; //300 250k sf = 12
           break;
         case 1:
-          airbaud = 976.562500;//1200 125k sf = 7
+          airbaud = 122.070310; //1200 500k sf = 12
           break;
         case 2:
-          airbaud = 1953.125000; //2400 250k sf = 7
+          airbaud = 244.140620; //2400 500k sf = 11
           break;
         case 3:
-          airbaud = 3906.250000; //4800 250k sf = 6
+          airbaud = 488.281240; //4800 500k sf = 10
           break;
         case 4:
-          airbaud = 7812.500000; //7200 500k sf = 6
+          airbaud = 976.562500; //7200 500k sf = 9
           break;
         case 5:
-          airbaud = 7812.500000; //7200 500k sf = 6
+          airbaud = 1953.125000; //9600 500k sf = 8
           break;
         case 6:
-          airbaud = 7812.500000; //7200 500k sf = 6
+          airbaud = 3906.250000; //14400 500k sf = 7
           break;
         case 7:
-          airbaud = 7812.500000; //7200 500k sf = 6
+          airbaud = 7812.500000; //19200 500k sf = 6
           break;
         default:
-          airbaud = 1953.125000; //2400 250k sf = 7
+          airbaud = 1953.125; // 2400
           break;
     }
     return airbaud;
@@ -181,16 +181,16 @@ uint8_t cfg_parm_get_air_bandwith(void)
     switch(stTmpCfgParm.speed.speedbit.radio_baud)
     {
         case 0:
-          bandwith = 0;
+          bandwith = 1;
           break;
         case 1:
-          bandwith = 0;
+          bandwith = 2;
           break;
         case 2:
-          bandwith = 1;
+          bandwith = 2;
           break;
         case 3:
-          bandwith = 1;
+          bandwith = 2;
           break;
         case 4:
           bandwith = 2;
@@ -205,7 +205,7 @@ uint8_t cfg_parm_get_air_bandwith(void)
           bandwith = 2;
           break;
         default:
-          bandwith = 1;
+          bandwith = 2;
           break;
     }
     return bandwith;
@@ -220,31 +220,31 @@ uint8_t cfg_parm_get_air_sf(void)
     switch(stTmpCfgParm.speed.speedbit.radio_baud)
     {
         case 0:
-          sf = 9;
+          sf = 12;
           break;
         case 1:
-          sf = 7;
+          sf = 12;
           break;
         case 2:
-          sf = 7;
+          sf = 11;
           break;
         case 3:
-          sf = 6;
+          sf = 10;
           break;
         case 4:
-          sf = 6;
+          sf = 9;
           break;
         case 5:
-          sf = 6;
+          sf = 8;
           break;
         case 6:
-          sf = 6;
+          sf = 7;
           break;
         case 7:
           sf = 6;
           break;
         default:
-          sf = 7;
+          sf = 11;
           break;
     }
     return sf;

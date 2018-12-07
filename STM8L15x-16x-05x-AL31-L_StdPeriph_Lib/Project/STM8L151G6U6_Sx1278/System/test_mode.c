@@ -55,6 +55,8 @@ void TestModeOnRadioTxTimeout( void )
     
     // Restarts continuous wave transmission when timeout expires
     printf("tx timeout!\r\n");
+    Radio.Sleep();
+    DelayMs(5);
     Radio.SetTxContinuousWave( 430000000 + channel * 5000000, TX_OUTPUT_POWER, 10 );
     if(++ channel > 16)
       channel = 0;

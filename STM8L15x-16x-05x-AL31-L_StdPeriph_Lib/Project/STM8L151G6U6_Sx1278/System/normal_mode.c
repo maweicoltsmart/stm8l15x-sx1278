@@ -79,12 +79,12 @@ void normal_mode_routin(void)
     Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
                                    cfg_parm_get_air_sf(), LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
+                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
 
     Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
     Radio.Rx( 0 ); // 0: receive RxContinuous
     ComportInit();
     BoardEnableIrq();

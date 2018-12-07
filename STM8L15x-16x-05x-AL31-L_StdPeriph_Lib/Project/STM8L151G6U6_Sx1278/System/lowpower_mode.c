@@ -64,7 +64,7 @@ static void SetTxCfg(void)
     Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, cfg_parm_get_air_bandwith(),
                                    cfg_parm_get_air_sf(), LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, true, 8, LORA_IQ_INVERSION_ON, 3000 );
+                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
 }
 
 static void SetRxCfg(void)
@@ -72,12 +72,12 @@ static void SetRxCfg(void)
     Radio.SetRxConfig( MODEM_LORA, cfg_parm_get_air_bandwith(), cfg_parm_get_air_sf(),
                                    LORA_CODINGRATE, 0, (uint16_t)(cfg_parm_get_air_baud() * (cfg_parm_get_wakeup_time() / 1000.0) + 3 + 8 + cfg_parm_get_air_baud() * 0.005),
                                    (uint16_t)(cfg_parm_get_air_baud() * (cfg_parm_get_wakeup_time() / 1000.0) + 3 + 8 + cfg_parm_get_air_baud() * 0.005), LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, true, 8, LORA_IQ_INVERSION_ON, true );
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
 }
 
 void lowpower_mode_routin(void)
 {
-    PWR_UltraLowPowerCmd(ENABLE);
+    //PWR_UltraLowPowerCmd(ENABLE);
     // cfg gpio & radio    
     // Radio initialization
     LowPowerModeRadioEvents.TxDone = LowPowerModeOnTxDone;
