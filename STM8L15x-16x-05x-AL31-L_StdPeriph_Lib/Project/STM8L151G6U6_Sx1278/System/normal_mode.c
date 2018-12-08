@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "cfg_parm.h"
 #include <stdio.h>
+#include "crc8.h"
 
 #define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
@@ -60,7 +61,7 @@ void NormalModeOnRxError( void );
 
 void normal_mode_routin(void)
 {
-    static char RadioTxBuffer[58];
+    static char RadioTxBuffer[58 + 3];
     uint8_t RadioTxLen = 0;
     TimerTime_t timestamp;
     // cfg gpio & radio    
@@ -89,8 +90,10 @@ void normal_mode_routin(void)
     ComportInit();
     BoardEnableIrq();
     printf("normal\r\n");
+    GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while(GetRunModePin() == En_Normal_Mode)
     {
+        IndicationRfTxFifoStatus();
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))
         {
             RadioTxLen = ring_buffer_num_items(&uart_rx_ring_buf);
@@ -98,12 +101,22 @@ void normal_mode_routin(void)
         }
         else
         {
-            if((RadioTxLen >= 58) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
+            if((RadioTxLen >= 58 + 3) || ((TimerGetElapsedTime(timestamp) > 3 * 8 * 1000 / (float)cfg_parm_get_uart_baud()) && (RadioTxLen > 0)))
             {
                 BoardDisableIrq();
                 if(Radio.GetStatus() != RF_TX_RUNNING)
                 {
-                    RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58);
+                    if(stTmpCfgParm.option.optionbit.dest_transmit)
+                    {
+                        RadioTxLen = ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer,58 + 3);
+                    }
+                    else
+                    {
+                        RadioTxBuffer[0] = stTmpCfgParm.channel.channelbit.channelno;
+                        RadioTxLen = 1 + ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer + 1,58);
+                    }
+                    RadioTxBuffer[RadioTxLen] = crc8(RadioTxBuffer,RadioTxLen);
+                    RadioTxLen ++;
                     //BoardDisableIrq();
                     Radio.Sleep( );
                     Radio.Send( (uint8_t*)RadioTxBuffer, RadioTxLen );
@@ -128,17 +141,28 @@ void NormalModeOnTxDone( void )
 
 void NormalModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    char temp = 0;
-    
-    ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
+    uint8_t crc;
+    crc = crc8(payload,size - 1);
+    if(crc == payload[size - 1])
+    {
+        if(stTmpCfgParm.option.optionbit.dest_transmit)
+        {
+            if((IS_BROADCAST_ADDR(*(uint16_t*)payload)) && (payload[2] == stTmpCfgParm.channel.channelbit.channelno))
+            {
+                ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)(payload + 3), size - 3 - 1);
+            }
+        }
+        else
+        {
+            if(payload[0] == stTmpCfgParm.channel.channelbit.channelno)
+            {
+                ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)(payload + 1), size - 1 - 1);
+            }
+        }
+    }
     Radio.Sleep( );
     Radio.Rx( 0 );
-    if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
-    {
-        ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
-        USART_SendData8(USART1, temp);
-        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-    }
+    ComportTxStart();
 }
 
 void NormalModeOnTxTimeout( void )

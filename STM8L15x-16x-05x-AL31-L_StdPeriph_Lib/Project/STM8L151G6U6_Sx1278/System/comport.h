@@ -5,5 +5,6 @@
 extern ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
 
 void ComportInit(void);
+void ComportTxStart(void);
 
 #endif

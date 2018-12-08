@@ -88,6 +88,7 @@ typedef enum{
 #define SX1278_TEST_PORT        GPIOD
 #define SX1278_TEST_PIN         GPIO_Pin_0
 
+void IndicationRfTxFifoStatus(void);
 void InitRunModePin(void);
 void BoardInitMcu( void );
 Run_Mode_Type GetRunModePin(void);

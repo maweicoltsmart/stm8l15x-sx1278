@@ -465,6 +465,7 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
         {
             /* Disable the USART Transmit Complete interrupt */
             USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+            GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
         }
     }
 }

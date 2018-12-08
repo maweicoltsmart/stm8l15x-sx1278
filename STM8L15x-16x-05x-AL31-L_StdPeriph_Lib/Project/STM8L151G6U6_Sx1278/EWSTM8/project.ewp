@@ -4940,6 +4940,9 @@
         <name>$PROJ_DIR$\..\System\config_mode.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\System\crc8.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\System\delay.c</name>
       </file>
       <file>

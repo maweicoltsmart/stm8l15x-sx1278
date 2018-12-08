@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "cfg_parm.h"
 #include <stdio.h>
+#include "crc8.h"
 
 #define LORA_CODINGRATE                             1         // [1: 4/5,
                                                               //  2: 4/6,
@@ -104,6 +105,7 @@ void lowpower_mode_routin(void)
     ComportInit();
     BoardEnableIrq();
     printf("lowpower\r\n");
+    GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while(GetRunModePin() == En_Low_Power_Mode)
     {
         RadioState_t rfstatus;
@@ -132,17 +134,28 @@ void LowPowerModeOnTxDone( void )
 
 void LowPowerModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    char temp = 0;
-    //printf("rxdone\r\n");
-    ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)payload, size);
+    uint8_t crc;
+    crc = crc8(payload,size - 1);
+    if(crc == payload[size - 1])
+    {
+        if(stTmpCfgParm.option.optionbit.dest_transmit)
+        {
+            if((IS_BROADCAST_ADDR(*(uint16_t*)payload)) && (payload[2] == stTmpCfgParm.channel.channelbit.channelno))
+            {
+                ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)(payload + 3), size - 3 - 1);
+            }
+        }
+        else
+        {
+            if(payload[0] == stTmpCfgParm.channel.channelbit.channelno)
+            {
+                ring_buffer_queue_arr(&uart_tx_ring_buf, (const char *)(payload + 1), size - 1 - 1);
+            }
+        }
+    }
     Radio.Sleep( );
     //Radio.Rx( 0 );
-    if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
-    {
-        ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
-        USART_SendData8(USART1, temp);
-        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-    }
+    ComportTxStart();
     RTC_WakeUpCmd(DISABLE);
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);

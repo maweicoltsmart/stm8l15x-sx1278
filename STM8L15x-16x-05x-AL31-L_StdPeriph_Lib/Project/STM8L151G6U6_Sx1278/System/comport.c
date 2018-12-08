@@ -3,6 +3,7 @@
 #include "ring_buf.h"
 #include "cfg_parm.h"
 #include "board.h"
+#include "delay.h"
 
 ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
 
@@ -149,3 +150,16 @@ GETCHAR_PROTOTYPE
     c = USART_ReceiveData8(USART1);
     return (c);
  }
+
+void ComportTxStart(void)
+{
+    char temp = 0;
+    if((USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET) && (!ring_buffer_is_empty(&uart_tx_ring_buf)))
+    {
+        GPIO_ResetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
+        DelayMs(2);
+        ring_buffer_dequeue(&uart_tx_ring_buf, &temp);
+        USART_SendData8(USART1, temp);
+        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+    }
+}

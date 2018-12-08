@@ -7,6 +7,7 @@
 #include "system.h"
 #include <math.h>
 #include <stdio.h>
+#include "crc8.h"
 
 /**
   * @brief  Configure TIM4 peripheral   
@@ -133,7 +134,7 @@ void BoardInitMcu( void )
     // ComportInit();
     if(stTmpCfgParm.option.optionbit.io_pushpull == 1)
     {
-        GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_High_Fast); // AUX mode output
+        GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_Out_PP_Low_Fast); // AUX mode output
     }
     else
     {
@@ -146,6 +147,7 @@ void BoardInitMcu( void )
     BEEP_LSICalibrationConfig(32768);
     SpiInit( );
     SX1276IoInit( );
+    init_crc8();
     BoardEnableIrq();
 }
 
@@ -160,4 +162,16 @@ void caculatebps(void)
           printf("bandwith = %f, sf = %d, tsym = %f, bps = %f\r\n",bandwith[i],sf_array[j],(float)pow(2,sf_array[j]) / bandwith[i],1.0 / ((float)pow(2,sf_array[j]) / bandwith[i]));
       }
   }
+}
+
+void IndicationRfTxFifoStatus(void)
+{
+    if(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
+    {
+        GPIO_ResetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
+    }
+    else
+    {
+        GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
+    }
 }

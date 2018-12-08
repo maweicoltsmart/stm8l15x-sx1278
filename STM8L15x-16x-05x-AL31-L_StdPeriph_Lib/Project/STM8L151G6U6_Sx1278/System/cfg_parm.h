@@ -17,6 +17,8 @@
     USART_Parity_TypeDef parity;
 };*/
 
+#define IS_BROADCAST_ADDR(addr)     ((addr == 0xffff) || (addr == 0x0000))?1:0
+
 typedef struct cfg_parm st_cfg_parm;
 typedef struct cfg_parm *pst_cfg_parm;
 
