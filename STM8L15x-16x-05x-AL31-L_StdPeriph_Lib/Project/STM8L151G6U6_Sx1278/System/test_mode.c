@@ -133,6 +133,7 @@ void test_mode_routin(void)
     printf("test\r\n");
     while(GetRunModePin() == En_Test_Mode)
     {
+        ClearWWDG();
         GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         DelayMs( 1 );
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);

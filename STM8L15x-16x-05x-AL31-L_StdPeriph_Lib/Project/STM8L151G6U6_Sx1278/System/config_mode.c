@@ -37,6 +37,7 @@ void config_mode_routin(void)
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while(GetRunModePin() == En_Config_Mode)
     {
+        ClearWWDG();
         halt();
         while(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
         {

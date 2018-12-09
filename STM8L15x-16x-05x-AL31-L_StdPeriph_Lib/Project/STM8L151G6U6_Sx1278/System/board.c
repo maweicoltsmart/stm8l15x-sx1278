@@ -16,6 +16,38 @@
   */
 #define TIM4_PERIOD       124
 __IO uint32_t TimingDelay;
+#define WINDOW_VALUE        97
+#define COUNTER_INIT       104
+
+static void WWDG_Config(void) 
+{
+  /* WWDG configuration: WWDG is clocked by SYSCLK = 2MHz */
+  /* WWDG timeout is equal to 251,9 ms */
+  /* Watchdog Window = (COUNTER_INIT - 63) * 1 step
+                     = 41 * (12288 / 16Mhz)
+                     = 251,9 ms
+  */
+  /* Non Allowed Window = (COUNTER_INIT - WINDOW_VALUE) * 1 step
+                        = (104 - 97) * 1 step
+                        =  7 * 1 step 
+                        =  7 * (12288 / 16Mhz) 
+                        =  43.008 ms
+   */
+  /* So the non allowed window starts from 0.0 ms to 43.008 ms
+  and the allowed window starts from 43.008 ms to 251,9 ms
+  If refresh is done during non allowed window, a reset will occur.
+  If refresh is done during allowed window, no reset will occur.
+  If the WWDG down counter reaches 63, a reset will occur. */
+  //WWDG_Init(COUNTER_INIT, WINDOW_VALUE);
+}
+
+void ClearWWDG(void)
+{
+    /* wait until WWDG counter becomes higher than window value */
+      //if ((WWDG_GetCounter() & 0x7F) < WINDOW_VALUE)
+      /* Refresh WWDG counter during non allowed window so MCU reset will occur */
+      //WWDG_SetCounter(COUNTER_INIT);
+}
 
 void RTC_Config(void)
 {
@@ -115,6 +147,7 @@ void BoardInitMcu( void )
     CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
     while (CLK_GetSYSCLKSource() != CLK_SYSCLKSource_HSI)
     {}
+    WWDG_Config();
     GPIO_DeInit(GPIOA);
     GPIO_DeInit(GPIOB);
     GPIO_DeInit(GPIOC);
@@ -149,6 +182,7 @@ void BoardInitMcu( void )
     SX1276IoInit( );
     init_crc8();
     BoardEnableIrq();
+    ClearWWDG();
 }
 
 void caculatebps(void)

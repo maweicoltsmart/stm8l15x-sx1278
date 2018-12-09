@@ -106,13 +106,10 @@ void lowpower_mode_routin(void)
     BoardEnableIrq();
     printf("lowpower\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
-    while(GetRunModePin() == En_Low_Power_Mode)
+    while((GetRunModePin() == En_Low_Power_Mode) || (!ring_buffer_is_empty(&uart_tx_ring_buf)) || (Radio.GetStatus() == RF_TX_RUNNING))
     {
-        RadioState_t rfstatus;
-        BoardDisableIrq();
-        rfstatus = Radio.GetStatus();
-        BoardEnableIrq();
-        if((rfstatus == RF_IDLE) && (ring_buffer_is_empty(&uart_tx_ring_buf)) && (USART_GetFlagStatus(USART1,USART_FLAG_TXE) == SET) && (USART_GetFlagStatus(USART1,USART_FLAG_TC) == SET))
+        ClearWWDG();
+        if((Radio.GetStatus() == RF_IDLE) && (ring_buffer_is_empty(&uart_tx_ring_buf)) && (USART_GetFlagStatus(USART1,USART_FLAG_TXE) == SET) && (USART_GetFlagStatus(USART1,USART_FLAG_TC) == SET))
         {
             BoardDisableIrq();
             

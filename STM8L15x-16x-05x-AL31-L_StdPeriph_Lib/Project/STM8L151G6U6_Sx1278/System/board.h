@@ -94,5 +94,6 @@ void BoardInitMcu( void );
 Run_Mode_Type GetRunModePin(void);
 void RTC_Config(void);
 void TIM4_Config(void);
+void ClearWWDG(void);
 
 #endif

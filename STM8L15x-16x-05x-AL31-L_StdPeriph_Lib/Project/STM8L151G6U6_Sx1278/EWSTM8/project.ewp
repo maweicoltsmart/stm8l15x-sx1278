@@ -4958,6 +4958,9 @@
         <name>$PROJ_DIR$\..\System\normal_mode.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\System\option.obc</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\System\ring_buf.c</name>
       </file>
       <file>

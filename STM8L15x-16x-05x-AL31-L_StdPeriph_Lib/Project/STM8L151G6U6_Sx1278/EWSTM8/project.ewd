@@ -196,11 +196,11 @@
         </option>
         <option>
           <name>STlinkOptionBytesSetupFileOver</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>STlinkOptionBytesSetupFile</name>
-          <state></state>
+          <state>D:\stm8lora\src\stm8l15x-sx1278\STM8L15x-16x-05x-AL31-L_StdPeriph_Lib\Project\STM8L151G6U6_Sx1278\System\option.obc</state>
         </option>
         <option>
           <name>STlinkEraseMemory</name>

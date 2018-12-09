@@ -101,8 +101,9 @@ void wakeup_mode_routin(void)
     BoardEnableIrq();
     printf("wakeup\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
-    while(GetRunModePin() == En_Wake_Up_Mode)
+    while((GetRunModePin() == En_Wake_Up_Mode) || (!ring_buffer_is_empty(&uart_rx_ring_buf)) || (!ring_buffer_is_empty(&uart_tx_ring_buf)) || (Radio.GetStatus() == RF_TX_RUNNING))
     {
+        ClearWWDG();
         IndicationRfTxFifoStatus();
         if(RadioTxLen != ring_buffer_num_items(&uart_rx_ring_buf))
         {
