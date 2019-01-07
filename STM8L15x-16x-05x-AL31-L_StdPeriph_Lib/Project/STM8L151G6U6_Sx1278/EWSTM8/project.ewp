@@ -83,7 +83,7 @@
         </option>
         <option>
           <name>GenStackSize</name>
-          <state>0x300</state>
+          <state>0x200</state>
         </option>
         <option>
           <name>GenHeapSize</name>
@@ -147,7 +147,7 @@
         </option>
         <option>
           <name>IccOptLevel</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccOptStrategy</name>
@@ -156,7 +156,7 @@
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
@@ -4927,6 +4927,27 @@
     </group>
     <group>
       <name>System</name>
+      <group>
+        <name>Crypto</name>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\aes.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\aes.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\cmac.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\cmac.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\LoRaMacCrypto.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\System\crypto\LoRaMacCrypto.h</name>
+        </file>
+      </group>
       <file>
         <name>$PROJ_DIR$\..\System\board.c</name>
       </file>
