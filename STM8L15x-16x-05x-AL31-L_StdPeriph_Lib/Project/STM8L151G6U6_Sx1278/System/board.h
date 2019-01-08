@@ -2,6 +2,8 @@
 #define __BOARD_H__
 #include "stm8l15x.h"
 
+#define VERSION_STR   "VERSION 1.2 ("__DATE__" "__TIME__")"
+
 typedef enum{
     En_Normal_Mode         = (uint8_t)0x00,
     En_Wake_Up_Mode        = (uint8_t)0x01,
@@ -87,6 +89,8 @@ typedef enum{
 
 #define SX1278_TEST_PORT        GPIOD
 #define SX1278_TEST_PIN         GPIO_Pin_0
+
+extern char RadioTxBuffer[];
 
 void IndicationRfTxFifoStatus(void);
 void InitRunModePin(void);

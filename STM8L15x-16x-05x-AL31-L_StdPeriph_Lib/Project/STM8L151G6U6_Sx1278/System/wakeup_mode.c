@@ -77,7 +77,6 @@ static void SetRxCfg(void)
 }
 void wakeup_mode_routin(void)
 {
-    static char RadioTxBuffer[58];
     uint8_t RadioTxLen = 0;
     TimerTime_t timestamp;
     // cfg gpio & radio    
@@ -126,7 +125,7 @@ void wakeup_mode_routin(void)
                         RadioTxBuffer[0] = stTmpCfgParm.channel.channelbit.channelno;
                         RadioTxLen = 1 + ring_buffer_dequeue_arr(&uart_rx_ring_buf,RadioTxBuffer + 1,58);
                     }
-                    RadioTxBuffer[RadioTxLen] = crc8(RadioTxBuffer,RadioTxLen);
+                    RadioTxBuffer[RadioTxLen] = crc8((uint8_t *)RadioTxBuffer,RadioTxLen);
                     RadioTxLen ++;
                     Radio.Sleep( );
                     SetTxCfg();

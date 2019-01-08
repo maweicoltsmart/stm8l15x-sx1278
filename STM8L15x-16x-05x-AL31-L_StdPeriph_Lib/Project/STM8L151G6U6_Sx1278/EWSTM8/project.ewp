@@ -83,7 +83,7 @@
         </option>
         <option>
           <name>GenStackSize</name>
-          <state>0x200</state>
+          <state>0xA0</state>
         </option>
         <option>
           <name>GenHeapSize</name>
@@ -147,7 +147,7 @@
         </option>
         <option>
           <name>IccOptLevel</name>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>IccOptStrategy</name>
@@ -156,12 +156,12 @@
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
           <version>0</version>
-          <state>000000</state>
+          <state>100100</state>
         </option>
         <option>
           <name>IccGenerateDebugInfo</name>
@@ -267,6 +267,8 @@
           <state>$PROJ_DIR$\..\Radio\sx1276</state>
           <state>$PROJ_DIR$\..\Radio</state>
           <state>$PROJ_DIR$\..\System</state>
+          <state>$PROJ_DIR$\..\System\Crypto</state>
+          <state>$PROJ_DIR$\..\Mac</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -4907,6 +4909,33 @@
   </group>
   <group>
     <name>User</name>
+    <group>
+      <name>Mac</name>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\frame.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\frame.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\hex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\hex.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\LoRaMac.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\LoRaMac.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\modem.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Mac\modem.h</name>
+      </file>
+    </group>
     <group>
       <name>Radio</name>
       <group>

@@ -409,6 +409,7 @@ void SX1276SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
     switch( modem )
     {
     case MODEM_FSK:
+#if 0
         {
             SX1276.Settings.Fsk.Bandwidth = bandwidth;
             SX1276.Settings.Fsk.Datarate = datarate;
@@ -448,6 +449,7 @@ void SX1276SetRxConfig( RadioModems_t modem, uint32_t bandwidth,
                            ( crcOn << 4 ) );
             SX1276Write( REG_PACKETCONFIG2, ( SX1276Read( REG_PACKETCONFIG2 ) | RF_PACKETCONFIG2_DATAMODE_PACKET ) );
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -706,6 +708,7 @@ uint32_t SX1276GetTimeOnAir( RadioModems_t modem, uint8_t pktLen )
     switch( modem )
     {
     case MODEM_FSK:
+#if 0
         {
             airTime = (uint32_t)(round( ( 8 * ( SX1276.Settings.Fsk.PreambleLen +
                                      ( ( SX1276Read( REG_SYNCCONFIG ) & ~RF_SYNCCONFIG_SYNCSIZE_MASK ) + 1 ) +
@@ -715,6 +718,7 @@ uint32_t SX1276GetTimeOnAir( RadioModems_t modem, uint8_t pktLen )
                                      ( ( SX1276.Settings.Fsk.CrcOn == 0x01 ) ? 2.0 : 0 ) ) /
                                      SX1276.Settings.Fsk.Datarate ) * 1000 ));
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -785,6 +789,7 @@ void SX1276Send( uint8_t *buffer, uint8_t size )
     switch( SX1276.Settings.Modem )
     {
     case MODEM_FSK:
+#if 0
         {
             SX1276.Settings.FskPacketHandler.NbBytes = 0;
             SX1276.Settings.FskPacketHandler.Size = size;
@@ -813,6 +818,7 @@ void SX1276Send( uint8_t *buffer, uint8_t size )
             SX1276.Settings.FskPacketHandler.NbBytes += SX1276.Settings.FskPacketHandler.ChunkSize;
             txTimeout = SX1276.Settings.Fsk.TxTimeout;
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -877,6 +883,7 @@ void SX1276SetRx( uint32_t timeout )
     switch( SX1276.Settings.Modem )
     {
     case MODEM_FSK:
+#if 0
         {
             rxContinuous = SX1276.Settings.Fsk.RxContinuous;
 
@@ -907,6 +914,7 @@ void SX1276SetRx( uint32_t timeout )
             SX1276.Settings.FskPacketHandler.NbBytes = 0;
             SX1276.Settings.FskPacketHandler.Size = 0;
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -1043,6 +1051,7 @@ void SX1276SetTx( uint32_t timeout )
     switch( SX1276.Settings.Modem )
     {
     case MODEM_FSK:
+#if 0
         {
             // DIO0=PacketSent
             // DIO1=FifoEmpty
@@ -1059,6 +1068,7 @@ void SX1276SetTx( uint32_t timeout )
                                                                             RF_DIOMAPPING2_MAP_MASK ) );
             SX1276.Settings.FskPacketHandler.FifoThresh = SX1276Read( REG_FIFOTHRESH ) & 0x3F;
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -1125,6 +1135,8 @@ void SX1276StartCad( void )
 
             SX1276.Settings.State = RF_CAD;
             SX1276SetOpMode( RFLR_OPMODE_CAD );
+            while(GPIO_ReadInputDataBit(SX1278_DIO3_PORT, SX1278_DIO3_PIN) == 0);
+            SX1276OnDio3Irq( NULL );
         }
         break;
     default:
@@ -1351,6 +1363,7 @@ void SX1276OnTimeoutIrq( void* context )
     switch( SX1276.Settings.State )
     {
     case RF_RX_RUNNING:
+#if 0
         if( SX1276.Settings.Modem == MODEM_FSK )
         {
             SX1276.Settings.FskPacketHandler.PreambleDetected = false;
@@ -1380,6 +1393,7 @@ void SX1276OnTimeoutIrq( void* context )
         {
             RadioEvents->RxTimeout( );
         }
+#endif
         break;
     case RF_TX_RUNNING:
         // Tx timeout shouldn't happen.
@@ -1433,6 +1447,7 @@ void SX1276OnDio0Irq( void* context )
             switch( SX1276.Settings.Modem )
             {
             case MODEM_FSK:
+#if 0
                 if( SX1276.Settings.Fsk.CrcOn == true )
                 {
                     irqFlags = SX1276Read( REG_IRQFLAGS2 );
@@ -1512,6 +1527,7 @@ void SX1276OnDio0Irq( void* context )
                 SX1276.Settings.FskPacketHandler.SyncWordDetected = false;
                 SX1276.Settings.FskPacketHandler.NbBytes = 0;
                 SX1276.Settings.FskPacketHandler.Size = 0;
+#endif
                 break;
             case MODEM_LORA:
                 {
@@ -1630,6 +1646,7 @@ void SX1276OnDio1Irq( void* context )
             switch( SX1276.Settings.Modem )
             {
             case MODEM_FSK:
+#if 0
                 // FifoLevel interrupt
                 // Read received packet size
                 if( ( SX1276.Settings.FskPacketHandler.Size == 0 ) && ( SX1276.Settings.FskPacketHandler.NbBytes == 0 ) )
@@ -1654,6 +1671,7 @@ void SX1276OnDio1Irq( void* context )
                     SX1276ReadFifo( ( RxTxBuffer + SX1276.Settings.FskPacketHandler.NbBytes ), SX1276.Settings.FskPacketHandler.Size - SX1276.Settings.FskPacketHandler.NbBytes );
                     SX1276.Settings.FskPacketHandler.NbBytes += ( SX1276.Settings.FskPacketHandler.Size - SX1276.Settings.FskPacketHandler.NbBytes );
                 }
+#endif
                 break;
             case MODEM_LORA:
                 // Sync time out
@@ -1675,6 +1693,7 @@ void SX1276OnDio1Irq( void* context )
             switch( SX1276.Settings.Modem )
             {
             case MODEM_FSK:
+#if 0
                 // FifoEmpty interrupt
                 if( ( SX1276.Settings.FskPacketHandler.Size - SX1276.Settings.FskPacketHandler.NbBytes ) > SX1276.Settings.FskPacketHandler.ChunkSize )
                 {
@@ -1687,6 +1706,7 @@ void SX1276OnDio1Irq( void* context )
                     SX1276WriteFifo( RxTxBuffer + SX1276.Settings.FskPacketHandler.NbBytes, SX1276.Settings.FskPacketHandler.Size - SX1276.Settings.FskPacketHandler.NbBytes );
                     SX1276.Settings.FskPacketHandler.NbBytes += SX1276.Settings.FskPacketHandler.Size - SX1276.Settings.FskPacketHandler.NbBytes;
                 }
+#endif
                 break;
             case MODEM_LORA:
                 break;
@@ -1707,6 +1727,7 @@ void SX1276OnDio2Irq( void* context )
             switch( SX1276.Settings.Modem )
             {
             case MODEM_FSK:
+#if 0
                 // Checks if DIO4 is connected. If it is not PreambleDetected is set to true.
                 //if( SX1276.DIO4.port == NULL )
                 {
@@ -1726,6 +1747,7 @@ void SX1276OnDio2Irq( void* context )
                                                                            ( double )FREQ_STEP);
                     SX1276.Settings.FskPacketHandler.RxGain = ( SX1276Read( REG_LNA ) >> 5 ) & 0x07;
                 }
+#endif
                 break;
             case MODEM_LORA:
                 if( SX1276.Settings.LoRa.FreqHopOn == true )

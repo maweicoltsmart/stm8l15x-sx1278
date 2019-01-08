@@ -35,7 +35,7 @@ void ComportInit(void)
           receive data register is not empty */
         USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
     }
-    else if(GetRunModePin() == En_Config_Mode)
+    else if((GetRunModePin() == En_Config_Mode)  || (stTmpCfgParm.inNetMode == TRUE))
     {
         USART_Init(USART1, 9600,
                   USART_WordLength_8b,

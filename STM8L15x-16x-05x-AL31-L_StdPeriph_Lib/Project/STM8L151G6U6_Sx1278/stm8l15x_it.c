@@ -208,7 +208,8 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     uint8_t bit = 0;
 
     EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
-    if(GetRunModePin() == En_Config_Mode)
+    //if(GetRunModePin() == En_Config_Mode)
+    //if(GPIO_ReadInputDataBit(SX1278_RX_PORT, SX1278_RX_PIN) == 0)
     {
         byte = 0;
         delay_10us(15);
@@ -237,10 +238,10 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);;
     }
-    else
+    /*else
     {
         SX1276OnDio3Irq( NULL );
-    }
+    }*/
 }
 
 /**

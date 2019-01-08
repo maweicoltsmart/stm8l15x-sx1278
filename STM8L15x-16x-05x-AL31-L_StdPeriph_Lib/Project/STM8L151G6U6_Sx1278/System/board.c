@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "crc8.h"
 
+char RadioTxBuffer[58 + 3];
 /**
   * @brief  Configure TIM4 peripheral   
   * @param  None
@@ -65,7 +66,7 @@ void RTC_Config(void)
   //RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
   /* Enable wake up unit Interrupt */
   RTC_ClearITPendingBit(RTC_IT_WUT);
-  if(GetRunModePin() == En_Low_Power_Mode)
+  if((GetRunModePin() == En_Low_Power_Mode) || (stTmpCfgParm.inNetMode == TRUE))
   {
       RTC_ITConfig(RTC_IT_WUT, ENABLE);
       RTC_WakeUpCmd(DISABLE);

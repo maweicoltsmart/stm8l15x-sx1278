@@ -33,6 +33,8 @@
 #include "wakeup_mode.h"
 #include "config_mode.h"
 #include "test_mode.h"
+#include "cfg_parm.h"
+#include "LoRaMac.h"
 
 /** @addtogroup STM8L15x_StdPeriph_Template
   * @{
@@ -58,6 +60,10 @@ void main(void)
     while(1)
     {
         run_mode = GetRunModePin();
+        if(stTmpCfgParm.inNetMode == TRUE)
+        {
+            LoRaMacStateCheck();
+        }
         switch(run_mode)
         {
             case En_Normal_Mode:

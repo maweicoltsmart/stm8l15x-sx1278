@@ -1,3 +1,4 @@
+#include "stm8l15x.h"
 #include "cfg_parm.h"
 #include <string.h>
 #include <stdio.h>
@@ -19,6 +20,7 @@ void cfg_parm_factory_reset(void)
     stTmpCfgParm.option.optionbit.radio_wakeup_time = 0x00;
     stTmpCfgParm.option.optionbit.io_pushpull = 1;
     stTmpCfgParm.option.optionbit.dest_transmit = 0x00;
+    stTmpCfgParm.inNetMode = FALSE;
     
     
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
@@ -26,6 +28,7 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
     stNvCfgParm.channel.channel = stTmpCfgParm.channel.channel;
     stNvCfgParm.option.option = stTmpCfgParm.option.option;
+    stNvCfgParm.inNetMode = stTmpCfgParm.inNetMode;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
@@ -37,6 +40,7 @@ void cfg_parm_restore(void)
     stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
     stNvCfgParm.channel.channel = stTmpCfgParm.channel.channel;
     stNvCfgParm.option.option = stTmpCfgParm.option.option;
+    stNvCfgParm.inNetMode = stTmpCfgParm.inNetMode;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
@@ -48,6 +52,7 @@ void cfg_parm_dump_to_ram(void)
     stTmpCfgParm.speed.speed = stNvCfgParm.speed.speed;
     stTmpCfgParm.channel.channel = stNvCfgParm.channel.channel;
     stTmpCfgParm.option.option = stNvCfgParm.option.option;
+    stTmpCfgParm.inNetMode = stNvCfgParm.inNetMode;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }

@@ -51,6 +51,7 @@ struct cfg_pkg{
             unsigned char dest_transmit:1; // 定点发送使能位（类MODBUS）0: 透明传输模式 ; 1: 定点传输模式,为1时，每个用户数据帧的前3个字节作为高、低地址、信道。发射时，模块改变自身地址和信道，完毕后，恢复原有设置。
         }optionbit;
     }option;
+    unsigned char inNetMode;
 };
 typedef struct cfg_pkg st_cfg_pkg;
 typedef struct cfg_pkg* pst_cfg_pkg;

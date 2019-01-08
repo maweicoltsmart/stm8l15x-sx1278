@@ -7,6 +7,7 @@
 #include "cfg_parm.h"
 #include "delay.h"
 #include <stdio.h>
+#include "LoRaMac.h"
 
 static RadioEvents_t ConfigModeRadioEvents;
 
@@ -124,9 +125,42 @@ void config_mode_routin(void)
                     GPIO_ResetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
                 }
                 break;
+              case 0xCF:
+                DelayMs(10);
+                if(ring_buffer_num_items(&uart_rx_ring_buf) < 2)
+                {
+                    break;
+                    //halt();
+                }
+                ring_buffer_dequeue_arr(&uart_rx_ring_buf,cmdbuf,2);
+                if((cmdbuf[0] == 0xCF) && ((cmdbuf[1] == 0x01) || (cmdbuf[1] == 0x00) || (cmdbuf[1] == 0xCF)))
+                {
+                    if(cmdbuf[1] == 0x01)
+                    {
+                        stTmpCfgParm.inNetMode = TRUE;
+                        cfg_parm_restore();
+                    }
+                    else if(cmdbuf[1] == 0x00)
+                    {
+                        stTmpCfgParm.inNetMode = FALSE;
+                        cfg_parm_restore();
+                    }
+                    cmdbuf[0] = 0xCF;
+                    cmdbuf[1] = 0xCF; // 433mhz
+                    cmdbuf[2] = stTmpCfgParm.inNetMode;
+                    for(uint8_t i = 0;i < 3;i ++)
+                    {
+                        putchar(cmdbuf[i]);
+                    }
+                }
+                break;
               default:
                 break;
             }
+        }
+        if(stTmpCfgParm.inNetMode)
+        {
+            break;
         }
     }
     GPIO_ResetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
