@@ -298,7 +298,7 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
        it is recommended to set a breakpoint on the following instruction.
     */
     EXTI_ClearITPendingBit(SX1278_DIO4_EXTI_IT_PIN);
-    SX1276OnDio4Irq( NULL );
+    //SX1276OnDio4Irq( NULL );
 }
 
 /**

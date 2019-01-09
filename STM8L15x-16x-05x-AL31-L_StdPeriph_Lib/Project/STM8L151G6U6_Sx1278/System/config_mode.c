@@ -32,7 +32,7 @@ void config_mode_routin(void)
     Radio.Sleep( );
     ComportInit();
     BoardEnableIrq();
-    printf("config\r\n");
+    //printf("config\r\n");
     // cfg gpio & radio
     //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);

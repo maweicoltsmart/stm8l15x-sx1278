@@ -139,6 +139,21 @@
 #define LORA_MAC_FRMPAYLOAD_OVERHEAD                13 // MHDR(1) + FHDR(7) + Port(1) + MIC(4)
 
 /*!
+ * LoRaMac internal states
+ */
+enum eLoRaMacState
+{
+    LORAMAC_IDLE          = 0x00000000,
+    LORAMAC_JOINING       = 0x00000001,
+    LORAMAC_JOINED        = 0x00000002,
+    LORAMAC_ACK_REQ       = 0x00000004,
+    LORAMAC_ACK_RETRY     = 0x00000008,
+    LORAMAC_TX_DELAYED    = 0x00000010,
+    LORAMAC_TX_CONFIG     = 0x00000020,
+    LORAMAC_RX_ABORT      = 0x00000040,
+};
+
+/*!
  * LoRaWAN devices classes definition
  *
  * LoRaWAN Specification V1.0.2, chapter 2.1
@@ -1823,8 +1838,7 @@ static const uint8_t LoRaMacMaxEirpTable[] = { 8, 10, 12, 13, 14, 16, 18, 20, 21
  *          \ref LORAMAC_STATUS_REGION_NOT_SUPPORTED.
  */
 LoRaMacStatus_t LoRaMacInitialization( void );
-
-LoRaMacStatus_t LoRaMacStateCheck( void );
+void LoRaMacStateCheck( void );
 
 /*!
  * Automatically add the Region.h file at the end of LoRaMac.h file.

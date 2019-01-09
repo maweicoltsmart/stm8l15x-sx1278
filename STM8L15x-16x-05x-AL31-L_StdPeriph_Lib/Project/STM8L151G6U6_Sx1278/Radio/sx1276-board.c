@@ -56,7 +56,7 @@ const struct Radio_s Radio =
     SX1276SetRxConfig,
     SX1276SetTxConfig,
     SX1276CheckRfFrequency,
-    SX1276GetTimeOnAir,
+    NULL,//SX1276GetTimeOnAir,
     SX1276Send,
     SX1276SetSleep,
     SX1276SetStby,
@@ -68,9 +68,9 @@ const struct Radio_s Radio =
     SX1276Read,
     SX1276WriteBuffer,
     SX1276ReadBuffer,
-    SX1276SetMaxPayloadLength,
+    NULL,//SX1276SetMaxPayloadLength,
     SX1276SetPublicNetwork,
-    SX1276GetWakeupTime,
+    NULL,//SX1276GetWakeupTime,
     NULL, // void ( *IrqProcess )( void )
     NULL, // void ( *RxBoosted )( uint32_t timeout ) - SX126x Only
     NULL, // void ( *SetRxDutyCycle )( uint32_t rxTime, uint32_t sleepTime ) - SX126x Only

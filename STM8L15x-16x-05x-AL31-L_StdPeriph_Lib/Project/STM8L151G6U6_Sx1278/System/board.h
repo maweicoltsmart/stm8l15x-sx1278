@@ -90,6 +90,7 @@ typedef enum{
 #define SX1278_TEST_PORT        GPIOD
 #define SX1278_TEST_PIN         GPIO_Pin_0
 
+#define RADIO_TXRX_BUFFER_LEN   (58 + 3)
 extern char RadioTxBuffer[];
 
 void IndicationRfTxFifoStatus(void);

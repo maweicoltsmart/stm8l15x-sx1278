@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "crc8.h"
 
-char RadioTxBuffer[58 + 3];
+char RadioTxBuffer[RADIO_TXRX_BUFFER_LEN];
 /**
   * @brief  Configure TIM4 peripheral   
   * @param  None
@@ -102,7 +102,7 @@ void TIM4_Config(void)
   TIM4_ClearFlag(TIM4_FLAG_Update);
   /* Enable update interrupt */
   TIM4_ClearITPendingBit(TIM4_IT_Update);
-  if(GetRunModePin() == En_Config_Mode)
+  if((GetRunModePin() == En_Config_Mode)  && (stTmpCfgParm.inNetMode == FALSE))
   {
       CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, DISABLE);
       TIM4_ITConfig(TIM4_IT_Update, DISABLE);

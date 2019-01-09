@@ -139,5 +139,6 @@ TimerTime_t TimerTempCompensation( TimerTime_t period, float temperature );
  * \brief Processes pending timer events
  */
 void TimerProcess( void );
+TimerTime_t TimerGetValue( void );
 
 #endif // __TIMER_H__

@@ -412,7 +412,7 @@ TimerTime_t TimerGetCurrentTime( void )
 
 TimerTime_t TimerGetElapsedTime( TimerTime_t savedTime )
 {
-    TimerTime_t elapsedTime = 0;
+    volatile TimerTime_t elapsedTime = 0;
 
     // Needed at boot, cannot compute with 0 or elapsed time will be equal to current time
     /*if( savedTime == 0 )

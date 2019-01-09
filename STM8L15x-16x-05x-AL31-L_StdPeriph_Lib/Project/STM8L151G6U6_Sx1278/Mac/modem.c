@@ -23,7 +23,7 @@ void modem_init () {
 void onEvent (ev_t ev)
 {
     // take action on specific events
-    switch(ev)
+    /*switch(ev)
     {
         case EV_JOINING:
           break;
@@ -32,7 +32,14 @@ void onEvent (ev_t ev)
         case EV_RXCOMPLETE:
         default:
           break;
+    }*/
+    //printf("%s\r\n",evnames[ev]);
+    for(uint8_t loop = 0;loop < strlen(evnames[ev]);loop ++)
+    {
+        putchar(evnames[ev][loop]);
     }
+    putchar('\r');
+    putchar('\n');
 }
 
 // called by frame job
@@ -53,7 +60,7 @@ void modem_rxdone () {
         Radio.Sleep( );
         rst = true;
         ok = 1;
-    } else if(cmd == 'q' && len == 1) { // ATZ reset
+    } else if(cmd == 'q' && len == 1) { // ATQ quit net mode
         stTmpCfgParm.inNetMode = FALSE;
         cfg_parm_restore();
         rst = true;

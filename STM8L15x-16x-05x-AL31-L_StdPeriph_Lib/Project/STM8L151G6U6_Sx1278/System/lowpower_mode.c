@@ -104,7 +104,7 @@ void lowpower_mode_routin(void)
     SetRxCfg();
     ComportInit();
     BoardEnableIrq();
-    printf("lowpower\r\n");
+    //printf("lowpower\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while((GetRunModePin() == En_Low_Power_Mode) || (!ring_buffer_is_empty(&uart_tx_ring_buf)) || (Radio.GetStatus() == RF_TX_RUNNING))
     {
@@ -169,7 +169,7 @@ void LowPowerModeOnRxTimeout( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
-    printf("rxtimeout\r\n");
+    //printf("rxtimeout\r\n");
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );
@@ -180,7 +180,7 @@ void LowPowerModeOnRxError( void )
 {
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
-    printf("rxerror\r\n");
+    //printf("rxerror\r\n");
     RTC_SetWakeUpCounter((uint16_t)(cfg_parm_get_wakeup_time() * 1000.0 / 488.28125) - 1);
     RTC_WakeUpCmd(ENABLE);
     //Radio.Rx( 0 );

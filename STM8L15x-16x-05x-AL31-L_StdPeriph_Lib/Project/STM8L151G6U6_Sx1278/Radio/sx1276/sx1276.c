@@ -581,6 +581,7 @@ void SX1276SetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
     switch( modem )
     {
     case MODEM_FSK:
+#if 0
         {
             SX1276.Settings.Fsk.Power = power;
             SX1276.Settings.Fsk.Fdev = fdev;
@@ -611,6 +612,7 @@ void SX1276SetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
                            ( crcOn << 4 ) );
             SX1276Write( REG_PACKETCONFIG2, ( SX1276Read( REG_PACKETCONFIG2 ) | RF_PACKETCONFIG2_DATAMODE_PACKET ) );
         }
+#endif
         break;
     case MODEM_LORA:
         {
@@ -1023,6 +1025,7 @@ void SX1276SetRx( uint32_t timeout )
 
     if( SX1276.Settings.Modem == MODEM_FSK )
     {
+#if 0
         SX1276SetOpMode( RF_OPMODE_RECEIVER );
 
         if( rxContinuous == false )
@@ -1030,6 +1033,7 @@ void SX1276SetRx( uint32_t timeout )
             TimerSetValue( &RxTimeoutSyncWord, SX1276.Settings.Fsk.RxSingleTimeout );
             TimerStart( &RxTimeoutSyncWord );
         }
+#endif
     }
     else
     {
@@ -1821,7 +1825,7 @@ void SX1276OnDio3Irq( void* context )
         break;
     }
 }
-
+#if 0
 void SX1276OnDio4Irq( void* context )
 {
     switch( SX1276.Settings.Modem )
@@ -1853,3 +1857,4 @@ void SX1276OnDio5Irq( void* context )
         break;
     }
 }
+#endif

@@ -88,7 +88,7 @@ void normal_mode_routin(void)
     Radio.Rx( 0 ); // 0: receive RxContinuous
     ComportInit();
     BoardEnableIrq();
-    printf("normal\r\n");
+    //printf("normal\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while((GetRunModePin() == En_Normal_Mode) || (!ring_buffer_is_empty(&uart_rx_ring_buf)) || (!ring_buffer_is_empty(&uart_tx_ring_buf)) || (Radio.GetStatus() == RF_TX_RUNNING))
     {
@@ -170,7 +170,7 @@ void NormalModeOnTxTimeout( void )
     Radio.Sleep( );
     Radio.Rx( 0 );
     NormalModeState = TX_TIMEOUT;
-    printf("txtimeout\r\n");
+    //printf("txtimeout\r\n");
 }
 
 void NormalModeOnRxTimeout( void )

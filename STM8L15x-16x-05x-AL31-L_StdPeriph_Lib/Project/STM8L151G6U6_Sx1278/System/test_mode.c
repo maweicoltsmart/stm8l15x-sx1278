@@ -54,7 +54,7 @@ void TestModeOnRadioTxTimeout( void )
     static int channel = 0;
     
     // Restarts continuous wave transmission when timeout expires
-    printf("tx timeout!\r\n");
+    //printf("tx timeout!\r\n");
     Radio.Sleep();
     DelayMs(5);
     Radio.SetTxContinuousWave( 430000000 + channel * 5000000, TX_OUTPUT_POWER, 10 );
@@ -71,7 +71,7 @@ void TestModeOnTxDone( void )
 
 void TestModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    printf("OnRxDone!\r\nrssi = %d, snr = %d\r\n", rssi, snr);
+    //printf("OnRxDone!\r\nrssi = %d, snr = %d\r\n", rssi, snr);
     Radio.Sleep( );
     /*BufferSize = size;
     memcpy( Buffer, payload, BufferSize );
@@ -82,7 +82,7 @@ void TestModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr
 
 void TestModeOnRxTimeout( void )
 {
-    printf("OnRxTimeout!\r\n");
+    //printf("OnRxTimeout!\r\n");
     Radio.Sleep( );
     Radio.Rx( 0 );
     TestModeState = RX;
@@ -90,7 +90,7 @@ void TestModeOnRxTimeout( void )
 
 void TestModeOnRxError( void )
 {
-    printf("OnRxError!\r\n");
+    //printf("OnRxError!\r\n");
     Radio.Sleep( );
     Radio.Rx( 0 );
     TestModeState = RX;
@@ -113,24 +113,24 @@ void test_mode_routin(void)
     TestModeRadioEvents.TxTimeout = TestModeOnRadioTxTimeout;
     Radio.Init( &TestModeRadioEvents );
     //Radio.Sleep();
-    printf("checking now!\r\n");
+    //printf("checking now!\r\n");
     
     //printf("checking tx power!\r\n");
     //while(GPIO_ReadInputDataBit(SX1278_AUX_PORT, SX1278_AUX_PIN) != 1);
     TestModeState = TX;
     TestModeOnRadioTxTimeout();
     /*
-    printf("checking rx sense!\r\n");
+    //printf("checking rx sense!\r\n");
     while(GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) != 1);
     TestModeState = RX;
     Radio.Sleep();
     Radio.Rx(0); // 0: receive RxContinuous
-    printf("checking rx sense!\r\n");
+    //printf("checking rx sense!\r\n");
     while((GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) != 1) || (TestModeState != LOWPOWER));
     TestModeState = LOWPOWER;
     Radio.Sleep();
     */
-    printf("test\r\n");
+    //printf("test\r\n");
     while(GetRunModePin() == En_Test_Mode)
     {
         ClearWWDG();

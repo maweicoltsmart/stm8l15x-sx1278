@@ -52,6 +52,16 @@ struct cfg_pkg{
         }optionbit;
     }option;
     unsigned char inNetMode;
+    unsigned char netState;
+    unsigned char LoRaMacDevEui[8];
+    unsigned char LoRaMacAppEui[8];
+    unsigned char LoRaMacAppKey[16];
+    unsigned char LoRaMacNwkSKey[16];
+    unsigned char LoRaMacAppSKey[16];
+    uint32_t LoRaMacNetID;
+    uint32_t LoRaMacDevAddr;
+    uint32_t UpLinkCounter;
+    uint32_t DownLinkCounter;
 };
 typedef struct cfg_pkg st_cfg_pkg;
 typedef struct cfg_pkg* pst_cfg_pkg;

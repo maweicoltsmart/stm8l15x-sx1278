@@ -83,6 +83,7 @@ typedef union Version_u
  * \param [IN] seed Pseudo random generator initial value
  */
 void srand1( uint32_t seed );
+int32_t rand1( void );
 
 /*!
  * \brief Computes a random number between min and max
