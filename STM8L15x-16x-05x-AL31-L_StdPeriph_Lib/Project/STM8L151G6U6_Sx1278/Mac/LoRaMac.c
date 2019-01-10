@@ -96,20 +96,12 @@ static void LoRaMacOnRadioRxError( void );
  */
 static void LoRaMacOnRadioRxTimeout( void );
 
-/*!
- * \brief LoRaMAC layer prepared frame buffer transmission with channel specification
- *
- * \remark PrepareFrame must be called at least once before calling this
- *         function.
- *
- * \param [IN] channel     Channel to transmit on
- * \retval status          Status of the operation.
- */
-LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len );
-
 static void LoRaMacOnRadioTxDone( void )
 {
-    onEvent(EV_TXCOMPLETE);
+    if(stTmpCfgParm.netState >= LORAMAC_JOINED)
+    {
+        onEvent(EV_TXCOMPLETE);
+    }
     Radio.Sleep( );
     //RTC_WakeUpCmd(ENABLE);
     
@@ -160,7 +152,7 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
             LoRaMacRxPayload[0] = macHdr.Value;
 
             LoRaMacJoinComputeMic( LoRaMacRxPayload, size - LORAMAC_MFR_LEN, stTmpCfgParm.LoRaMacAppKey, &mic );
-            mic += LoRaMacDevNonceCopy;
+            mic += LoRaMacDevNonce;
 
             micRx |= ( uint32_t )LoRaMacRxPayload[size - LORAMAC_MFR_LEN];
             micRx |= ( ( uint32_t )LoRaMacRxPayload[size - LORAMAC_MFR_LEN + 1] << 8 );
@@ -299,18 +291,21 @@ void LoRaMacOnRadioCadDone( bool channelActivityDetected )
     }
 }
 
-LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len )
+LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm)
 {
     uint8_t *LoRaMacBuffer = (uint8_t *)RadioTxBuffer;
     LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
-    uint8_t fPort;
+    uint8_t fPort = 1;
     uint8_t pktHeaderLen = 0;
     uint32_t mic = 0;
     
     macHdr.Bits.Major = 1;
-    macHdr.Bits.MType = FRAME_TYPE_DATA_UNCONFIRMED_UP;
-    macHdr.Bits.RFU = GetRunModePin();
+    if(confirm == 1)
+        macHdr.Bits.MType = FRAME_TYPE_DATA_CONFIRMED_UP;
+    else
+        macHdr.Bits.MType = FRAME_TYPE_DATA_UNCONFIRMED_UP;
+    macHdr.Bits.RFU = CLASS_A;
     fCtrl.Value = 0;
 
     LoRaMacBuffer[pktHeaderLen++] = macHdr.Value;
@@ -335,10 +330,10 @@ LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len )
 
     LoRaMacComputeMic( LoRaMacBuffer, pktHeaderLen, stTmpCfgParm.LoRaMacNwkSKey, stTmpCfgParm.LoRaMacDevAddr, UP_LINK, stTmpCfgParm.UpLinkCounter, &mic );
 
-    LoRaMacBuffer[pktHeaderLen + 0] = mic & 0xFF;
-    LoRaMacBuffer[pktHeaderLen + 1] = ( mic >> 8 ) & 0xFF;
-    LoRaMacBuffer[pktHeaderLen + 2] = ( mic >> 16 ) & 0xFF;
-    LoRaMacBuffer[pktHeaderLen + 3] = ( mic >> 24 ) & 0xFF;
+    LoRaMacBuffer[pktHeaderLen ++] = mic & 0xFF;
+    LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 8 ) & 0xFF;
+    LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 16 ) & 0xFF;
+    LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 24 ) & 0xFF;
 
     Radio.SetChannel( channel * 1000000 + 410000000 );
     Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, 2,
@@ -369,7 +364,7 @@ LoRaMacStatus_t SendJoinRequest( void )
     
     macHdr.Bits.Major = 1;
     macHdr.Bits.MType = FRAME_TYPE_JOIN_REQ;
-    macHdr.Bits.RFU = GetRunModePin();
+    macHdr.Bits.RFU = CLASS_A;
     LoRaMacBuffer[pktHeaderLen++] = macHdr.Value;
     memcpyr( LoRaMacBuffer + pktHeaderLen, stTmpCfgParm.LoRaMacAppEui, 8 );
     pktHeaderLen += 8;
@@ -377,7 +372,7 @@ LoRaMacStatus_t SendJoinRequest( void )
     pktHeaderLen += 8;
 
     LoRaMacDevNonce = rand1();//Radio.Random( );
-    LoRaMacDevNonceCopy = LoRaMacDevNonce;
+    LoRaMacDevNonceCopy = (LoRaMacDevNonce << 8) | (LoRaMacDevNonce >> 8);
     LoRaMacBuffer[pktHeaderLen++] = LoRaMacDevNonce & 0xFF;
     LoRaMacBuffer[pktHeaderLen++] = ( LoRaMacDevNonce >> 8 ) & 0xFF;
 

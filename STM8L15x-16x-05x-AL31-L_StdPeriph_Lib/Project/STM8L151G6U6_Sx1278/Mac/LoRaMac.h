@@ -1839,6 +1839,7 @@ static const uint8_t LoRaMacMaxEirpTable[] = { 8, 10, 12, 13, 14, 16, 18, 20, 21
  */
 LoRaMacStatus_t LoRaMacInitialization( void );
 void LoRaMacStateCheck( void );
+LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm);
 
 /*!
  * Automatically add the Region.h file at the end of LoRaMac.h file.

@@ -6,7 +6,7 @@
 
 __eeprom st_cfg_pkg stNvCfgParm;
 st_cfg_pkg stTmpCfgParm;
-
+const uint8_t LoRaMacDevEuiInFlash[8] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 void cfg_parm_factory_reset(void)
 {
     memset(&stTmpCfgParm,0,5);
@@ -25,7 +25,14 @@ void cfg_parm_factory_reset(void)
     stTmpCfgParm.netState = LORAMAC_IDLE;
     //{ 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C }
     //stTmpCfgParm.LoRaMacDevEui = ;
-    //stTmpCfgParm.LoRaMacAppEui = ;
+    stTmpCfgParm.LoRaMacAppEui[0] = 'M';
+    stTmpCfgParm.LoRaMacAppEui[1] = 'J';
+    stTmpCfgParm.LoRaMacAppEui[2] = '-';
+    stTmpCfgParm.LoRaMacAppEui[3] = 'M';
+    stTmpCfgParm.LoRaMacAppEui[4] = 'o';
+    stTmpCfgParm.LoRaMacAppEui[5] = 'd';
+    stTmpCfgParm.LoRaMacAppEui[6] = 'e';
+    stTmpCfgParm.LoRaMacAppEui[7] = 'm';
     stTmpCfgParm.LoRaMacAppKey[0] = 0x2B;
     stTmpCfgParm.LoRaMacAppKey[1] = 0x7E;
     stTmpCfgParm.LoRaMacAppKey[2] = 0x15;
@@ -57,6 +64,11 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.netState = stTmpCfgParm.netState;
     stNvCfgParm.UpLinkCounter = stTmpCfgParm.UpLinkCounter;
     stNvCfgParm.DownLinkCounter = stTmpCfgParm.DownLinkCounter;
+    for(uint8_t i = 0;i < 8;i ++)
+    {
+        stNvCfgParm.LoRaMacAppEui[i] = LoRaMacDevEuiInFlash[i];
+        stNvCfgParm.LoRaMacAppEui[i] = stTmpCfgParm.LoRaMacAppEui[i];
+    }
     for(uint8_t i = 0;i < 16;i ++)
     {
         stNvCfgParm.LoRaMacAppKey[i] = stTmpCfgParm.LoRaMacAppKey[i];

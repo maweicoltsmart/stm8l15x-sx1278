@@ -19,11 +19,11 @@ enum _ev_t { EV_JOINING,
 typedef enum _ev_t ev_t;
 
 static const char* evnames[] = {
-    [EV_JOINING]        = "JOINING",
-    [EV_JOINED]         = "JOINED",
-    [EV_TXCOMPLETE]     = "TXCOMPLETE",
-    [EV_RESET]          = "RESET",
-    [EV_RXCOMPLETE]     = "RXCOMPLETE",
+    [EV_JOINING]        = "EV_JOINING",
+    [EV_JOINED]         = "EV_JOINED",
+    [EV_TXCOMPLETE]     = "EV_TXCOMPLETE",
+    [EV_RESET]          = "EV_RESET",
+    [EV_RXCOMPLETE]     = "EV_RXCOMPLETE",
 };
 
 void modem_init ();
