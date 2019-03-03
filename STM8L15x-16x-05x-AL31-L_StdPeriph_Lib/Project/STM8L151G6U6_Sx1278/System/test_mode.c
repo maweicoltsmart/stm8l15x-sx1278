@@ -10,6 +10,14 @@
 #define TX_OUTPUT_POWER                             20        // 20 dBm
 #define TX_TIMEOUT                                  65535     // seconds (MAX value)
 #define RX_TIMEOUT                                  65535     // seconds (MAX value)
+#define LORA_CODINGRATE                             1         // [1: 4/5,
+                                                              //  2: 4/6,
+                                                              //  3: 4/7,
+                                                              //  4: 4/8]
+#define LORA_PREAMBLE_LENGTH                        8         // Same for Tx and Rx
+#define LORA_SYMBOL_TIMEOUT                         0         // Symbols
+#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
+#define LORA_IQ_INVERSION_ON                        false
 
 typedef enum
 {
@@ -21,6 +29,7 @@ typedef enum
 
 static States_t TestModeState = LOWPOWER;
 static RadioEvents_t TestModeRadioEvents;
+static int16_t TestRssi = 0,TestSnr = 0;
 /*!
  * \brief Function to be executed on Radio Tx Done event
  */
@@ -51,15 +60,9 @@ void TestModeOnRxError( void );
  */
 void TestModeOnRadioTxTimeout( void )
 {
-    static int channel = 0;
-    
-    // Restarts continuous wave transmission when timeout expires
-    //printf("tx timeout!\r\n");
     Radio.Sleep();
-    DelayMs(5);
-    Radio.SetTxContinuousWave( 430000000 + channel * 5000000, TX_OUTPUT_POWER, 10 );
-    if(++ channel > 16)
-      channel = 0;
+    //DelayMs(5);
+    Radio.SetTxContinuousWave( 433000000, TX_OUTPUT_POWER, TX_TIMEOUT );
 }
 
 void TestModeOnTxDone( void )
@@ -77,6 +80,8 @@ void TestModeOnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr
     memcpy( Buffer, payload, BufferSize );
     RssiValue = rssi;
     SnrValue = snr;*/
+    TestRssi = rssi;
+    TestSnr = snr;
     TestModeState = LOWPOWER;
 }
 
@@ -96,48 +101,94 @@ void TestModeOnRxError( void )
     TestModeState = RX;
 }
 
+Run_Mode_Type TestGetRunModePin(void)
+{
+    if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
+      return En_Normal_Mode;
+    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN)) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
+      return En_Wake_Up_Mode;
+    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN)))
+      return En_Low_Power_Mode;
+    else
+      return En_Config_Mode;
+    //return En_Low_Power_Mode;
+}
+
 void test_mode_routin(void)
 {
-    // cfg gpio & radio
-    RTC_Config();
-    TIM4_Config();
-    ComportInit();
-    cfg_parm_factory_reset();
-    stManufactureParm.softwareversion = VERSION_STR;
-    GPIO_Init(SX1278_AUX_PORT, SX1278_AUX_PIN, GPIO_Mode_In_FL_No_IT); // AUX mode input
-        // Radio initialization
-    //TestModeRadioEvents.TxDone = TestModeOnTxDone;
-    //TestModeRadioEvents.RxDone = TestModeOnRxDone;
-    //TestModeRadioEvents.RxTimeout = TestModeOnRxTimeout;
-    //TestModeRadioEvents.RxError = TestModeOnRxError;
-    TestModeRadioEvents.TxTimeout = TestModeOnRadioTxTimeout;
-    Radio.Init( &TestModeRadioEvents );
-    //Radio.Sleep();
-    //printf("checking now!\r\n");
+    char cmdbyte;
+    char cmdbuf[6];
     
-    //printf("checking tx power!\r\n");
-    //while(GPIO_ReadInputDataBit(SX1278_AUX_PORT, SX1278_AUX_PIN) != 1);
-    TestModeState = TX;
-    TestModeOnRadioTxTimeout();
-    /*
-    //printf("checking rx sense!\r\n");
-    while(GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) != 1);
-    TestModeState = RX;
-    Radio.Sleep();
-    Radio.Rx(0); // 0: receive RxContinuous
-    //printf("checking rx sense!\r\n");
-    while((GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) != 1) || (TestModeState != LOWPOWER));
-    TestModeState = LOWPOWER;
-    Radio.Sleep();
-    */
-    //printf("test\r\n");
-    while(GetRunModePin() == En_Test_Mode)
+    PWR_UltraLowPowerCmd(DISABLE); // TIM2Ê±ÖÓ»áÓÐÑÓ³Ù
+    BoardDisableIrq();
+    //TIM4_Config();
+    TestModeRadioEvents.TxDone = NULL;
+    TestModeRadioEvents.RxDone = NULL;
+    TestModeRadioEvents.TxTimeout = NULL;
+    TestModeRadioEvents.RxTimeout = NULL;
+    TestModeRadioEvents.RxError = NULL;
+    TestModeRadioEvents.CadDone = NULL;
+
+    //RTC_Config();
+
+    Radio.Init( &TestModeRadioEvents );
+    Radio.Sleep( );
+    ComportInit();
+    BoardEnableIrq();
+    //printf("config\r\n");
+    // cfg gpio & radio
+    //GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
+    while(1)//(GetRunModePin() == En_Test_Mode)
     {
-        ClearWWDG();
-        GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
-        DelayMs( 1 );
-        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
-        DelayMs( 1 );
+        switch(TestGetRunModePin())
+        {
+            case En_Config_Mode:
+              Radio.Sleep( );
+              Radio.Init( &TestModeRadioEvents );
+              Radio.Sleep( );
+              //while(TestGetRunModePin() == En_Config_Mode);
+              halt();
+              break;
+            case En_Normal_Mode:
+              Radio.Sleep( );
+              Radio.Init( &TestModeRadioEvents );
+              Radio.Sleep( );
+              TestModeOnRadioTxTimeout();
+              while(TestGetRunModePin() == En_Normal_Mode);
+              //halt();
+              break;
+            case En_Wake_Up_Mode:
+              Radio.Sleep( );
+              Radio.Init( &TestModeRadioEvents );
+              Radio.Sleep( );
+              Radio.SetChannel( 433000000 );
+              Radio.SetRxConfig( MODEM_LORA, 2, 12,
+                                       LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                       LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                       0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+              Radio.Rx( 0 ); // 0: receive RxContinuous
+              while(TestGetRunModePin() == En_Wake_Up_Mode);
+              //halt();
+              putchar((uint8_t)(TestRssi & 0x00ff));
+              putchar((uint8_t)((TestRssi & 0xff00) >> 8));
+              putchar((uint8_t)(TestSnr & 0x00ff));
+              putchar((uint8_t)((TestSnr & 0xff00) >> 8));
+              break;
+            case En_Low_Power_Mode:
+              Radio.Sleep( );
+              Radio.Init( &TestModeRadioEvents );
+              Radio.Sleep( );
+              if(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
+              {
+                  ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
+              }
+              else
+              {
+                  halt();
+              }
+              break;
+        }
     }
     //printf("check over!\r\n");
     // reset mcu and get run mode again

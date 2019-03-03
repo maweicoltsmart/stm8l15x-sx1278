@@ -143,14 +143,17 @@
  */
 enum eLoRaMacState
 {
-    LORAMAC_IDLE          = 0x00000000,
-    LORAMAC_JOINING       = 0x00000001,
-    LORAMAC_JOINED        = 0x00000002,
-    LORAMAC_ACK_REQ       = 0x00000004,
-    LORAMAC_ACK_RETRY     = 0x00000008,
-    LORAMAC_TX_DELAYED    = 0x00000010,
-    LORAMAC_TX_CONFIG     = 0x00000020,
-    LORAMAC_RX_ABORT      = 0x00000040,
+    LORAMAC_IDLE                 = 0x00,
+    LORAMAC_JOINING              = 0x01,
+    LORAMAC_JOIN_TX_DONE         = 0x02,
+    LORAMAC_JOINING_WAIT_ACCEPT1 = 0x03,
+    LORAMAC_JOINING_WAIT_ACCEPT2 = 0x04,
+    LORAMAC_JOINED               = 0x05,
+    LORAMAC_JOINED_IDLE          = 0x06,
+    LORAMAC_TX_ING               = 0x07,
+    LORAMAC_TX_DONE              = 0x08,
+    LORAMAC_TX_WAIT_RESP1        = 0x09,
+    LORAMAC_TX_WAIT_RESP2        = 0x0A,
 };
 
 /*!
@@ -1839,7 +1842,7 @@ static const uint8_t LoRaMacMaxEirpTable[] = { 8, 10, 12, 13, 14, 16, 18, 20, 21
  */
 LoRaMacStatus_t LoRaMacInitialization( void );
 void LoRaMacStateCheck( void );
-LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm);
+LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm,uint8_t fPort);
 
 /*!
  * Automatically add the Region.h file at the end of LoRaMac.h file.

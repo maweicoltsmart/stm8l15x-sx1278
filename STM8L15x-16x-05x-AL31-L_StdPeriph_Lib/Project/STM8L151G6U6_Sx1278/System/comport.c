@@ -18,24 +18,7 @@ void ComportInit(void)
     CLK_PeripheralClockConfig(CLK_Peripheral_USART1, ENABLE);
     
     /* USART configuration */
-    if(GetRunModePin() == En_Test_Mode)
-    {
-        USART_Init(USART1, 9600,
-                  USART_WordLength_8b,
-                  USART_StopBits_1,
-                  USART_Parity_No,
-                  (USART_Mode_TypeDef)(USART_Mode_Rx | USART_Mode_Tx));
-        /* Configure USART Tx as alternate function push-pull  (software pull up)*/
-        GPIO_ExternalPullUpConfig(SX1278_TX_PORT, SX1278_TX_PIN, ENABLE);
-
-        /* Configure USART Rx as alternate function push-pull  (software pull up)*/
-        GPIO_ExternalPullUpConfig(SX1278_RX_PORT, SX1278_RX_PIN, ENABLE);
-        
-        /* Enable the USART Receive interrupt: this interrupt is generated when the USART
-          receive data register is not empty */
-        USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-    }
-    else if((GetRunModePin() == En_Config_Mode)  || (stTmpCfgParm.inNetMode == TRUE))
+    if((GetRunModePin() == En_Test_Mode)  || (GetRunModePin() == En_Config_Mode)  || (stTmpCfgParm.inNetMode == TRUE))
     {
         USART_Init(USART1, 9600,
                   USART_WordLength_8b,

@@ -70,7 +70,7 @@ static RadioEvents_t LoRaMacRadioEvents;
  * Acknowledge timeout timer. Used for packet retransmissions.
  */
 TimerEvent_t AckTimeoutTimer;
-
+uint32_t TxDoneTimerTick;
 /*!
  * \brief Function to be executed on Radio Tx Done event
  */
@@ -98,19 +98,13 @@ static void LoRaMacOnRadioRxTimeout( void );
 
 static void LoRaMacOnRadioTxDone( void )
 {
+    TxDoneTimerTick = TimerGetCurrentTime( );
     if(stTmpCfgParm.netState >= LORAMAC_JOINED)
     {
         onEvent(EV_TXCOMPLETE);
     }
     Radio.Sleep( );
     //RTC_WakeUpCmd(ENABLE);
-    
-    Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-    Radio.SetChannel( 24 * 1000000 + 410000000 );
-    Radio.Rx(0);
 }
 
 static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
@@ -135,7 +129,10 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
     uint8_t *appSKey = stTmpCfgParm.LoRaMacAppSKey;
 
     bool isMicOk = false;
-
+    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    {
+        stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+    }
     Radio.Sleep( );
 
     macHdr.Value = payload[pktHeaderLen++];
@@ -180,7 +177,7 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
         case FRAME_TYPE_DATA_CONFIRMED_DOWN:
         case FRAME_TYPE_DATA_UNCONFIRMED_DOWN:
             {
-                if( stTmpCfgParm.netState != LORAMAC_JOINED )
+                if( stTmpCfgParm.netState < LORAMAC_JOINED )
                 {
                     return;
                 }
@@ -240,14 +237,42 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
 
                 if( isMicOk == true )
                 {
-                    LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
-                                                   frameLen,
-                                                   appSKey,
-                                                   address,
-                                                   DOWN_LINK,
-                                                   downLinkCounter,
-                                                   LoRaMacRxPayload );
-                    onEvent(EV_RXCOMPLETE);
+                    if( ( ( size - 4 ) - appPayloadStartIndex ) > 0 )
+                    {
+                        port = payload[appPayloadStartIndex++];
+                        frameLen = ( size - 4 ) - appPayloadStartIndex;
+                        LoRaMacPayloadDecrypt( payload + appPayloadStartIndex,
+                                                       frameLen,
+                                                       appSKey,
+                                                       address,
+                                                       DOWN_LINK,
+                                                       downLinkCounter,
+                                                       LoRaMacRxPayload );
+                        onEvent(EV_RXCOMPLETE);
+                        if(fCtrl.Bits.Ack)
+                        {
+                            if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP1)
+                            {
+                                putchar(',');
+                                putchar('A');
+                                putchar('1');
+                            }
+                            if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP2)
+                            {
+                                putchar(',');
+                                putchar('A');
+                                putchar('2');
+                            }
+                        }
+                        frameLen = puthex (payload, (const uint8_t*) LoRaMacRxPayload, frameLen);
+                        putchar(',');
+                        for(uint8_t loop8 = 0;loop8 < frameLen;loop8++)
+                        {
+                            putchar(payload[loop8]);
+                        }
+                        putchar('\r');
+                        putchar('\n');
+                    }
                 }
             }
             break;
@@ -263,16 +288,28 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
 static void LoRaMacOnRadioTxTimeout( void )
 {
     Radio.Sleep( );
+    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    {
+        stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+    }
 }
 
 static void LoRaMacOnRadioRxError( void )
 {
     Radio.Sleep( );
+    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    {
+        stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+    }
 }
 
 static void LoRaMacOnRadioRxTimeout( void )
 {
     Radio.Sleep( );
+    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    {
+        stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+    }
 }
 
 void LoRaMacOnRadioCadDone( bool channelActivityDetected )
@@ -291,12 +328,12 @@ void LoRaMacOnRadioCadDone( bool channelActivityDetected )
     }
 }
 
-LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm)
+LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,uint8_t confirm,uint8_t fPort)
 {
     uint8_t *LoRaMacBuffer = (uint8_t *)RadioTxBuffer;
     LoRaMacHeader_t macHdr;
     LoRaMacFrameCtrl_t fCtrl;
-    uint8_t fPort = 1;
+    // uint8_t fPort = 1;
     uint8_t pktHeaderLen = 0;
     uint32_t mic = 0;
     
@@ -348,7 +385,7 @@ LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,ui
     // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
 
-    return LORAMAC_STATUS_OK;
+    return TRUE;
 }
 
 LoRaMacStatus_t SendJoinRequest( void )
@@ -461,10 +498,47 @@ void LoRaMacStateCheck( void )
               SendJoinRequest();
               
               timertick = TimerGetCurrentTime( );
+              TxDoneTimerTick = TimerGetCurrentTime( );
               stTmpCfgParm.netState = LORAMAC_JOINING;
               
               break;
             case LORAMAC_JOINING:
+              timertick = TimerGetCurrentTime( );
+              TxDoneTimerTick = TimerGetCurrentTime( );
+              stTmpCfgParm.netState = LORAMAC_JOIN_TX_DONE;
+              break;
+            case LORAMAC_JOIN_TX_DONE:
+              if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
+              {
+                  
+              }
+              else
+              {
+                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  Radio.Rx(1200);
+                  stTmpCfgParm.netState = LORAMAC_JOINING_WAIT_ACCEPT1;
+              }
+              break;
+            case LORAMAC_JOINING_WAIT_ACCEPT1:
+              if(TimerGetElapsedTime(TxDoneTimerTick) < 1900)
+              {
+              }
+              else
+              {
+                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  Radio.Rx(1200);
+                  stTmpCfgParm.netState = LORAMAC_JOINING_WAIT_ACCEPT2;
+              }
+              break;
+            case LORAMAC_JOINING_WAIT_ACCEPT2:
               if(TimerGetElapsedTime(timertick) < 5000)
               {
                   // sleep
@@ -477,7 +551,56 @@ void LoRaMacStateCheck( void )
               //halt();
               break;
             case LORAMAC_JOINED:
-              
+              stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+              break;
+            case LORAMAC_JOINED_IDLE:
+              halt();
+              break;
+            case LORAMAC_TX_ING:
+              TxDoneTimerTick = TimerGetCurrentTime( );
+              stTmpCfgParm.netState = LORAMAC_TX_DONE;
+              break;
+            case LORAMAC_TX_DONE:
+              if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
+              {
+                  
+              }
+              else
+              {
+                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  Radio.Rx(1200);
+                  stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP1;
+              }
+              break;
+            case LORAMAC_TX_WAIT_RESP1:
+              if(TimerGetElapsedTime(TxDoneTimerTick) < 1900)
+              {
+                  
+              }
+              else
+              {
+                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  Radio.Rx(1200);
+                  stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP2;
+              }
+              break;
+             case LORAMAC_TX_WAIT_RESP2:
+              if(TimerGetElapsedTime(TxDoneTimerTick) < 3100)
+              {
+                  
+              }
+              else
+              {
+                  stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+              }
               break;
             default:
               break;

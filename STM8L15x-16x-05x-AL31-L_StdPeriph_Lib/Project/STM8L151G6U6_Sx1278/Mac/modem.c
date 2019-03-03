@@ -39,8 +39,11 @@ void onEvent (ev_t ev)
     {
         putchar(evnames[ev][loop]);
     }
-    putchar('\r');
-    putchar('\n');
+    if(ev != EV_RXCOMPLETE)
+    {
+        putchar('\r');
+        putchar('\n');
+    }
 }
 
 // called by frame job
@@ -112,16 +115,15 @@ void modem_rxdone () {
               comfirm = (MODEM.cmdbuf[1] - '0')?1:0;
             datalen = 0;
             if(len > 5 && MODEM.cmdbuf[5]==',') { // data
-                datalen = len-6;
-                //memcpy((uint8_t*)RadioTxBuffer,MODEM.cmdbuf+6,datalen);
+                datalen = gethex(MODEM.cmdbuf, MODEM.cmdbuf+6, len-6);
             }
         }
         if(stTmpCfgParm.netState >= LORAMAC_JOINED)
         {
             if(len == 5 || datalen <= 51) {
-                if((port > 0) && (port < 224)){
-                    SendFrameOnChannel(channel,MODEM.cmdbuf+6,datalen,comfirm);
-                    ok = 1;
+                if((port > 0) && (port < 224) && (stTmpCfgParm.netState == LORAMAC_JOINED_IDLE)){
+                    stTmpCfgParm.netState = LORAMAC_TX_ING;
+                    ok = SendFrameOnChannel(channel,MODEM.cmdbuf,datalen,comfirm,port);
                 }
             }
         }

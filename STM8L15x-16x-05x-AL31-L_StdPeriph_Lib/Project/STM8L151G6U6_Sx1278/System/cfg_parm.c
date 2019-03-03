@@ -66,7 +66,7 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.DownLinkCounter = stTmpCfgParm.DownLinkCounter;
     for(uint8_t i = 0;i < 8;i ++)
     {
-        stNvCfgParm.LoRaMacAppEui[i] = LoRaMacDevEuiInFlash[i];
+        stNvCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
         stNvCfgParm.LoRaMacAppEui[i] = stTmpCfgParm.LoRaMacAppEui[i];
     }
     for(uint8_t i = 0;i < 16;i ++)

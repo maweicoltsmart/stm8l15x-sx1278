@@ -60,7 +60,7 @@ void main(void)
     while(1)
     {
         run_mode = GetRunModePin();
-        if(stTmpCfgParm.inNetMode == TRUE)
+        if((stTmpCfgParm.inNetMode == TRUE) && (run_mode != En_Test_Mode))
         {
             LoRaMacStateCheck();
         }
