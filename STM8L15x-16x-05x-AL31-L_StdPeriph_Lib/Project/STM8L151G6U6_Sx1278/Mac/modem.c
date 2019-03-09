@@ -127,9 +127,35 @@ void modem_rxdone () {
                 }
             }
         }
-    }else if(cmd == 'p' && len == 1) { // ATP set ping mode
-        if(stTmpCfgParm.netState >= LORAMAC_JOINED) { // requires a session
+    }else if(cmd == 'p' && len >= 2) { // JOIN parameters
+        if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATP? query (tx power)
+            rspbuf += cpystr(rspbuf, "OK,");
+            // reverse(tmp, stTmpCfgParm.ChannelMask, 3);
+            rspbuf += puthex(rspbuf, &stTmpCfgParm.TxPower, 1);
             ok = 1;
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+2) { // ATP= set (tx power)
+            uint8_t tmp[3];
+            if( gethex(tmp, MODEM.cmdbuf+2, 2) == 1) {
+                gethex(&stTmpCfgParm.TxPower, MODEM.cmdbuf+2, 2);
+                // reverse(stTmpCfgParm.ChannelMask, tmp, 3);
+                cfg_parm_restore();
+                ok = 1;
+            }
+        }
+    }else if(cmd == 'c' && len >= 2) { // JOIN parameters
+        if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATC? query (channel mask)
+            rspbuf += cpystr(rspbuf, "OK,");
+            // reverse(tmp, stTmpCfgParm.ChannelMask, 3);
+            rspbuf += puthex(rspbuf, stTmpCfgParm.ChannelMask, 3);
+            ok = 1;
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+6) { // ATC= set (channel mask)
+            uint8_t tmp[3];
+            if( gethex(tmp, MODEM.cmdbuf+2, 6) == 3) {
+                gethex(stTmpCfgParm.ChannelMask, MODEM.cmdbuf+2, 6);
+                // reverse(stTmpCfgParm.ChannelMask, tmp, 3);
+                cfg_parm_restore();
+                ok = 1;
+            }
         }
     }
 

@@ -54,7 +54,11 @@ void cfg_parm_factory_reset(void)
     //stTmpCfgParm.LoRaMacAppSKey = ;
     stTmpCfgParm.UpLinkCounter = 0;
     stTmpCfgParm.DownLinkCounter = 0;
-    
+    stTmpCfgParm.ChannelMask[0] = 0x41;
+    stTmpCfgParm.ChannelMask[1] = 0x00;
+    stTmpCfgParm.ChannelMask[2] = 0x00;
+    stTmpCfgParm.TxPower = 20;
+
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
     stNvCfgParm.addr_l = stTmpCfgParm.addr_l;
     stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
@@ -73,7 +77,10 @@ void cfg_parm_factory_reset(void)
     {
         stNvCfgParm.LoRaMacAppKey[i] = stTmpCfgParm.LoRaMacAppKey[i];
     }
-    
+    stNvCfgParm.ChannelMask[0] = stTmpCfgParm.ChannelMask[0];
+    stNvCfgParm.ChannelMask[1] = stTmpCfgParm.ChannelMask[1];
+    stNvCfgParm.ChannelMask[2] = stTmpCfgParm.ChannelMask[2];
+    stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
@@ -103,6 +110,10 @@ void cfg_parm_restore(void)
     stNvCfgParm.DownLinkCounter = stTmpCfgParm.DownLinkCounter;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
+    stNvCfgParm.ChannelMask[0] = stTmpCfgParm.ChannelMask[0];
+    stNvCfgParm.ChannelMask[1] = stTmpCfgParm.ChannelMask[1];
+    stNvCfgParm.ChannelMask[2] = stTmpCfgParm.ChannelMask[2];
+    stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
 }
 
 void cfg_parm_dump_to_ram(void)

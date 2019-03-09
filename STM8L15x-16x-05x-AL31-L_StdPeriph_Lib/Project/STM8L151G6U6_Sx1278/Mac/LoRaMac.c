@@ -71,6 +71,8 @@ static RadioEvents_t LoRaMacRadioEvents;
  */
 TimerEvent_t AckTimeoutTimer;
 uint32_t TxDoneTimerTick;
+uint8_t GlobalChannel;
+uint8_t GlobalDR;
 /*!
  * \brief Function to be executed on Radio Tx Done event
  */
@@ -95,6 +97,43 @@ static void LoRaMacOnRadioRxError( void );
  * \brief Function executed on Radio Rx Timeout event
  */
 static void LoRaMacOnRadioRxTimeout( void );
+static void RadioSetTx(void)
+{
+    uint8_t channellist[24];
+    uint8_t enablechannel = 0;
+    for(uint8_t loop1 = 0;loop1 < 3;loop1 ++)
+    {
+        for(uint8_t loop2 = 0;loop2 < 8;loop2 ++)
+        {
+            if(stTmpCfgParm.ChannelMask[loop1] & (1 << loop2))
+            {
+                channellist[enablechannel] = loop1 * 8 + loop2;
+                enablechannel ++;
+            }
+        }
+    }
+    if(enablechannel < 1)
+    {
+        return;
+    }
+    GlobalChannel = channellist[randr( 0, enablechannel - 1 )];
+    GlobalDR = 12- GlobalChannel % 6;
+    Radio.SetChannel( GlobalChannel * 1000000 + 410000000 );
+    Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 2,
+                                   GlobalDR, LORA_CODINGRATE,
+                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
+}
+
+static void RadioSetRx(void)
+{
+    Radio.SetChannel( (GlobalChannel + 24)* 1000000 + 410000000 );
+
+    Radio.SetRxConfig( MODEM_LORA, 2, GlobalDR,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+}
 
 static void LoRaMacOnRadioTxDone( void )
 {
@@ -129,10 +168,7 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
     uint8_t *appSKey = stTmpCfgParm.LoRaMacAppSKey;
 
     bool isMicOk = false;
-    if(stTmpCfgParm.netState > LORAMAC_JOINED)
-    {
-        stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
-    }
+    
     Radio.Sleep( );
 
     macHdr.Value = payload[pktHeaderLen++];
@@ -275,6 +311,10 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                     }
                 }
             }
+            if(stTmpCfgParm.netState > LORAMAC_JOINED)
+            {
+                stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+            }
             break;
         case FRAME_TYPE_PROPRIETARY:
             {
@@ -297,19 +337,19 @@ static void LoRaMacOnRadioTxTimeout( void )
 static void LoRaMacOnRadioRxError( void )
 {
     Radio.Sleep( );
-    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    /*if(stTmpCfgParm.netState > LORAMAC_JOINED)
     {
         stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
-    }
+    }*/
 }
 
 static void LoRaMacOnRadioRxTimeout( void )
 {
     Radio.Sleep( );
-    if(stTmpCfgParm.netState > LORAMAC_JOINED)
+    /*if(stTmpCfgParm.netState > LORAMAC_JOINED)
     {
         stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
-    }
+    }*/
 }
 
 void LoRaMacOnRadioCadDone( bool channelActivityDetected )
@@ -372,17 +412,7 @@ LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,ui
     LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 16 ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 24 ) & 0xFF;
 
-    Radio.SetChannel( channel * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, 2,
-                                   12, LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
-
-    Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-    // Send now
+    RadioSetTx();    // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
 
     return TRUE;
@@ -422,16 +452,7 @@ LoRaMacStatus_t SendJoinRequest( void )
     BoardDisableIrq();
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
-    Radio.SetChannel( channel * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, 2,
-                                   12, LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
-
-    Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
+    RadioSetTx();
     // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
     BoardEnableIrq();
@@ -454,17 +475,8 @@ LoRaMacStatus_t LoRaMacInitialization( void )
     Radio.Init( &LoRaMacRadioEvents );
 
     //factory = 433000000;
-    Radio.SetChannel( stTmpCfgParm.channel.channelbit.channelno * 1000000 + 410000000 );
-    Radio.SetTxConfig( MODEM_LORA, cfg_parm_get_tx_power(), 0, 2,
-                                   12, LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, false, 0, LORA_IQ_INVERSION_ON, 3000 );
-
-    Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-    
+    RadioSetTx();
+    RadioSetRx();    
     Radio.Sleep( );
     Radio.SetPublicNetwork( 0 );
     //printf("net mode\r\n");
@@ -514,11 +526,7 @@ void LoRaMacStateCheck( void )
               }
               else
               {
-                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  RadioSetRx();
                   Radio.Rx(1200);
                   stTmpCfgParm.netState = LORAMAC_JOINING_WAIT_ACCEPT1;
               }
@@ -529,11 +537,7 @@ void LoRaMacStateCheck( void )
               }
               else
               {
-                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  RadioSetRx();
                   Radio.Rx(1200);
                   stTmpCfgParm.netState = LORAMAC_JOINING_WAIT_ACCEPT2;
               }
@@ -567,11 +571,7 @@ void LoRaMacStateCheck( void )
               }
               else
               {
-                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  RadioSetRx();
                   Radio.Rx(1200);
                   stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP1;
               }
@@ -583,11 +583,7 @@ void LoRaMacStateCheck( void )
               }
               else
               {
-                  Radio.SetRxConfig( MODEM_LORA, 2, 12,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, false, 0, LORA_IQ_INVERSION_ON, true );
-                  Radio.SetChannel( 24 * 1000000 + 410000000 );
+                  RadioSetRx();
                   Radio.Rx(1200);
                   stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP2;
               }

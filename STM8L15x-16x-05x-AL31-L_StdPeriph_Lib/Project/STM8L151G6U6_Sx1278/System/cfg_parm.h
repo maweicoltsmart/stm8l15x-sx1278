@@ -62,6 +62,8 @@ struct cfg_pkg{
     uint32_t LoRaMacDevAddr;
     uint32_t UpLinkCounter;
     uint32_t DownLinkCounter;
+    unsigned char ChannelMask[3];
+    unsigned char TxPower;
 };
 typedef struct cfg_pkg st_cfg_pkg;
 typedef struct cfg_pkg* pst_cfg_pkg;
