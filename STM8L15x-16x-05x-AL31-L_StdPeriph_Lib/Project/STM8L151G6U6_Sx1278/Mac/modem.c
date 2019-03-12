@@ -100,7 +100,7 @@ void modem_rxdone () {
             gethex(tmp, MODEM.cmdbuf+2+16+1, 32) == 16 ) {
                 gethex(tmp, MODEM.cmdbuf+2, 16);
                 reverse(stTmpCfgParm.LoRaMacAppEui, tmp, 8);
-                gethex(tmp, MODEM.cmdbuf+2, 32);
+                gethex(tmp, MODEM.cmdbuf+2+16+1, 32);
                 reverse(stTmpCfgParm.LoRaMacAppKey, tmp, 16);
                 stTmpCfgParm.netState = LORAMAC_IDLE;
                 cfg_parm_restore();
@@ -142,17 +142,19 @@ void modem_rxdone () {
                 ok = 1;
             }
         }
-    }else if(cmd == 'c' && len >= 2) { // JOIN parameters
+    }else if(cmd == 'c' && len >= 2) { // CHANNEL parameters
+        uint8_t tmp[3];
         if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATC? query (channel mask)
             rspbuf += cpystr(rspbuf, "OK,");
-            // reverse(tmp, stTmpCfgParm.ChannelMask, 3);
-            rspbuf += puthex(rspbuf, stTmpCfgParm.ChannelMask, 3);
+            memcpy(tmp,stTmpCfgParm.ChannelMask,3);
+            reverse(tmp, tmp, 3);
+            rspbuf += puthex(rspbuf, tmp, 3);
             ok = 1;
         } else if(MODEM.cmdbuf[1] == '=' && len == 2+6) { // ATC= set (channel mask)
             uint8_t tmp[3];
             if( gethex(tmp, MODEM.cmdbuf+2, 6) == 3) {
-                gethex(stTmpCfgParm.ChannelMask, MODEM.cmdbuf+2, 6);
-                // reverse(stTmpCfgParm.ChannelMask, tmp, 3);
+                memcpy(stTmpCfgParm.ChannelMask,tmp,3);
+                reverse(stTmpCfgParm.ChannelMask, stTmpCfgParm.ChannelMask, 3);
                 cfg_parm_restore();
                 ok = 1;
             }
