@@ -60,6 +60,10 @@ void modem_rxdone () {
         rspbuf += cpystr(rspbuf, "OK,");
         rspbuf += cpystr(rspbuf, VERSION_STR);
         ok = 1;
+    } else if(cmd == 'f' && len == 2 && MODEM.cmdbuf[1] == '?') { // ATV? query version
+        rspbuf += cpystr(rspbuf, "OK,");
+        rspbuf += cpystr(rspbuf, (char const*)factorystring);
+        ok = 1;
     } else if(cmd == 'z' && len == 1) { // ATZ reset
         Radio.Sleep( );
         rst = true;
@@ -118,10 +122,10 @@ void modem_rxdone () {
                 datalen = gethex(MODEM.cmdbuf, MODEM.cmdbuf+6, len-6);
             }
         }
-        if(stTmpCfgParm.netState >= LORAMAC_JOINED)
+        if(stTmpCfgParm.netState == LORAMAC_JOINED_IDLE)
         {
             if(len == 5 || datalen <= 51) {
-                if((port > 0) && (port < 224) && (stTmpCfgParm.netState == LORAMAC_JOINED_IDLE)){
+                if((port > 0) && (port < 224)){
                     stTmpCfgParm.netState = LORAMAC_TX_ING;
                     ok = SendFrameOnChannel(channel,MODEM.cmdbuf,datalen,comfirm,port);
                 }
@@ -179,6 +183,7 @@ void modem_rxdone () {
     if(rst == true)
     {
         //Reset_Handler();
+        __iar_program_start();
     }
     frame_init(&rxframe, MODEM.cmdbuf, sizeof(MODEM.cmdbuf));
 }

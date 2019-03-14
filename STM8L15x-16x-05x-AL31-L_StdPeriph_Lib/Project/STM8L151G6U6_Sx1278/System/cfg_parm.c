@@ -6,7 +6,8 @@
 
 __eeprom st_cfg_pkg stNvCfgParm;
 st_cfg_pkg stTmpCfgParm;
-const uint8_t LoRaMacDevEuiInFlash[8] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
+__eeprom uint8_t LoRaMacDevEuiInFlash[8] = {0x00,0x00,0x00,0x00,0x14,0x03,0x19,0x20};
+__eeprom uint8_t factorystring[250] = {0x00};
 void cfg_parm_factory_reset(void)
 {
     memset(&stTmpCfgParm,0,5);
@@ -70,6 +71,7 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.DownLinkCounter = stTmpCfgParm.DownLinkCounter;
     for(uint8_t i = 0;i < 8;i ++)
     {
+        stTmpCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
         stNvCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
         stNvCfgParm.LoRaMacAppEui[i] = stTmpCfgParm.LoRaMacAppEui[i];
     }
@@ -145,6 +147,10 @@ void cfg_parm_dump_to_ram(void)
     stTmpCfgParm.DownLinkCounter = stNvCfgParm.DownLinkCounter;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
+    stTmpCfgParm.ChannelMask[0] = stNvCfgParm.ChannelMask[0];
+    stTmpCfgParm.ChannelMask[1] = stNvCfgParm.ChannelMask[1];
+    stTmpCfgParm.ChannelMask[2] = stNvCfgParm.ChannelMask[2];
+    stTmpCfgParm.TxPower = stNvCfgParm.TxPower;
 }
 
 uint8_t cfg_parm_get_tx_power(void)

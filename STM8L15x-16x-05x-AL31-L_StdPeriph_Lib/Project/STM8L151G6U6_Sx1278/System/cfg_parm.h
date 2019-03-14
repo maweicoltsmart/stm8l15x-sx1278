@@ -70,6 +70,8 @@ typedef struct cfg_pkg* pst_cfg_pkg;
 
 extern __eeprom st_cfg_pkg stNvCfgParm;
 extern st_cfg_pkg stTmpCfgParm;
+extern __eeprom uint8_t LoRaMacDevEuiInFlash[];
+extern __eeprom uint8_t factorystring[];
 
 void cfg_parm_factory_reset(void);
 void cfg_parm_restore(void);

@@ -6,6 +6,7 @@
 #include "manufacture_parm.h"
 #include "delay.h"
 #include "comport.h"
+#include "timer.h"
 
 #define TX_OUTPUT_POWER                             20        // 20 dBm
 #define TX_TIMEOUT                                  65535     // seconds (MAX value)
@@ -117,11 +118,13 @@ Run_Mode_Type TestGetRunModePin(void)
 void test_mode_routin(void)
 {
     char cmdbyte;
-    char cmdbuf[6];
+    // char cmdbuf[40];
     
     PWR_UltraLowPowerCmd(DISABLE); // TIM2Ê±ÖÓ»áÓÐÑÓ³Ù
     BoardDisableIrq();
     //TIM4_Config();
+    CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
+    TIM4_ITConfig(TIM4_IT_Update, ENABLE);
     TestModeRadioEvents.TxDone = NULL;
     TestModeRadioEvents.RxDone = NULL;
     TestModeRadioEvents.TxTimeout = NULL;
@@ -179,9 +182,34 @@ void test_mode_routin(void)
               Radio.Sleep( );
               Radio.Init( &TestModeRadioEvents );
               Radio.Sleep( );
-              if(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
+              volatile uint32_t timertick;
+              timertick = TimerGetCurrentTime( );
+              while(TimerGetElapsedTime(timertick) < 300);
+              if(ring_buffer_num_items(&uart_rx_ring_buf) > 7)
               {
-                  ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
+                  while(ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte))
+                  {
+                      if(cmdbyte == '"')
+                      {
+                          uint8_t datalen = 0;
+                          
+                          do{
+                              ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
+                              factorystring[datalen ++] = cmdbyte;
+                          }
+                          while(cmdbyte != '"');
+                          datalen --;
+                          factorystring[datalen - 1] = 0x00;
+                          for(int8_t index = 7;index >= 0;index -- )
+                          {
+                              LoRaMacDevEuiInFlash[index] = factorystring[-- datalen];
+                          }
+                          putchar('o');
+                          putchar('k');
+                          putchar('!');
+                          putchar('!');
+                      }
+                  }
               }
               else
               {
