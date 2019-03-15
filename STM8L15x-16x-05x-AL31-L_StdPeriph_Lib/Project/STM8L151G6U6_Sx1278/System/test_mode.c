@@ -122,9 +122,9 @@ void test_mode_routin(void)
     
     PWR_UltraLowPowerCmd(DISABLE); // TIM2 ±÷”ª·”–—”≥Ÿ
     BoardDisableIrq();
-    //TIM4_Config();
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
-    TIM4_ITConfig(TIM4_IT_Update, ENABLE);
+    TIM4_Config();
+    // CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
+    // TIM4_ITConfig(TIM4_IT_Update, ENABLE);
     TestModeRadioEvents.TxDone = NULL;
     TestModeRadioEvents.RxDone = NULL;
     TestModeRadioEvents.TxTimeout = NULL;
@@ -182,11 +182,12 @@ void test_mode_routin(void)
               Radio.Sleep( );
               Radio.Init( &TestModeRadioEvents );
               Radio.Sleep( );
-              volatile uint32_t timertick;
-              timertick = TimerGetCurrentTime( );
-              while(TimerGetElapsedTime(timertick) < 300);
+              
               if(ring_buffer_num_items(&uart_rx_ring_buf) > 7)
               {
+                  volatile uint32_t timertick;
+                  timertick = TimerGetCurrentTime( );
+                  while(TimerGetElapsedTime(timertick) < 300);
                   while(ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte))
                   {
                       if(cmdbyte == '"')

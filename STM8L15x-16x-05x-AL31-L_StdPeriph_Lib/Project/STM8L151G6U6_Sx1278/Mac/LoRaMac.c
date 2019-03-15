@@ -73,6 +73,12 @@ TimerEvent_t AckTimeoutTimer;
 uint32_t TxDoneTimerTick;
 uint8_t GlobalChannel;
 uint8_t GlobalDR;
+bool bTxComplete = 0;
+bool bRxComplete = 0;
+LoRaMacFrameCtrl_t RxfCtrl;
+uint8_t RxDataLen = 0;
+uint8_t *pRxDataBuf = NULL;
+
 /*!
  * \brief Function to be executed on Radio Tx Done event
  */
@@ -117,7 +123,11 @@ static void RadioSetTx(void)
     {
         return;
     }
-    GlobalChannel = channellist[randr( 0, enablechannel - 1 )];
+    uint8_t loop3 = 0;
+    do{
+          GlobalChannel = channellist[randr(0,enablechannel - 1)];//[loop3 % enablechannel];
+          loop3 ++;
+    }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 410000000, -90, 5 ) && (loop3 < enablechannel * 2));
     GlobalDR = 12;//- GlobalChannel % 6;
     Radio.SetChannel( GlobalChannel * 200000 + 410000000 );
     Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 0,
@@ -142,7 +152,8 @@ static void LoRaMacOnRadioTxDone( void )
     TxDoneTimerTick = TimerGetCurrentTime( );
     if(stTmpCfgParm.netState >= LORAMAC_JOINED)
     {
-        onEvent(EV_TXCOMPLETE);
+        //onEvent(EV_TXCOMPLETE);
+        bTxComplete = 1;
         stTmpCfgParm.netState = LORAMAC_TX_DONE;
     }
     if(stTmpCfgParm.netState < LORAMAC_JOINED)
@@ -156,7 +167,7 @@ static void LoRaMacOnRadioTxDone( void )
 static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
     LoRaMacHeader_t macHdr;
-    LoRaMacFrameCtrl_t fCtrl;
+    //LoRaMacFrameCtrl_t fCtrl;
 
     uint8_t pktHeaderLen = 0;
     uint32_t address = 0;
@@ -242,12 +253,12 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                     downLinkCounter = stTmpCfgParm.DownLinkCounter;
                 }
 
-                fCtrl.Value = payload[pktHeaderLen++];
+                RxfCtrl.Value = payload[pktHeaderLen++];
 
                 sequenceCounter = ( uint16_t )payload[pktHeaderLen++];
                 sequenceCounter |= ( uint16_t )payload[pktHeaderLen++] << 8;
 
-                appPayloadStartIndex = 8 + fCtrl.Bits.FOptsLen;
+                appPayloadStartIndex = 8 + RxfCtrl.Bits.FOptsLen;
 
                 micRx |= ( uint32_t )payload[size - LORAMAC_MFR_LEN];
                 micRx |= ( ( uint32_t )payload[size - LORAMAC_MFR_LEN + 1] << 8 );
@@ -291,30 +302,13 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                                                        DOWN_LINK,
                                                        downLinkCounter,
                                                        LoRaMacRxPayload );
-                        onEvent(EV_RXCOMPLETE);
-                        if(fCtrl.Bits.Ack)
-                        {
-                            if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP1)
-                            {
-                                putchar(',');
-                                putchar('A');
-                                putchar('1');
-                            }
-                            if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP2)
-                            {
-                                putchar(',');
-                                putchar('A');
-                                putchar('2');
-                            }
-                        }
-                        frameLen = puthex (payload, (const uint8_t*) LoRaMacRxPayload, frameLen);
-                        putchar(',');
-                        for(uint8_t loop8 = 0;loop8 < frameLen;loop8++)
-                        {
-                            putchar(payload[loop8]);
-                        }
-                        putchar('\r');
-                        putchar('\n');
+                        RxDataLen = 0;
+                        RxDataLen += puthex (payload, &port, 1);
+                        payload[2] = ',';
+                        RxDataLen += 1;
+                        RxDataLen += puthex (&payload[3], (const uint8_t*) LoRaMacRxPayload, frameLen);
+                        pRxDataBuf = payload;
+                        bRxComplete = 1;
                     }
                 }
             }
@@ -422,23 +416,17 @@ LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,ui
     LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 8 ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 16 ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen ++] = ( mic >> 24 ) & 0xFF;
-
     RadioSetTx();    // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
-
     return TRUE;
 }
 
 LoRaMacStatus_t SendJoinRequest( void )
 {
     uint8_t *LoRaMacBuffer = (uint8_t *)RadioTxBuffer;
-    uint8_t payload[RADIO_TXRX_BUFFER_LEN];
     LoRaMacHeader_t macHdr;
-    LoRaMacFrameCtrl_t *fCtrl;
-    uint8_t fPort;
     uint8_t pktHeaderLen = 0;
     uint32_t mic = 0;
-    static uint8_t channel = 0;
     
     macHdr.Bits.Major = 1;
     macHdr.Bits.MType = FRAME_TYPE_JOIN_REQ;
@@ -460,13 +448,13 @@ LoRaMacStatus_t SendJoinRequest( void )
     LoRaMacBuffer[pktHeaderLen++] = ( mic >> 8 ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen++] = ( mic >> 16 ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen++] = ( mic >> 24 ) & 0xFF;
-    BoardDisableIrq();
+    // BoardDisableIrq();
     Radio.Sleep( );
     RTC_WakeUpCmd(DISABLE);
     RadioSetTx();
     // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
-    BoardEnableIrq();
+    // BoardEnableIrq();
     onEvent(EV_JOINING);
     return LORAMAC_STATUS_OK;
 }
@@ -486,8 +474,8 @@ LoRaMacStatus_t LoRaMacInitialization( void )
     Radio.Init( &LoRaMacRadioEvents );
 
     //factory = 433000000;
-    RadioSetTx();
-    RadioSetRx();    
+    // RadioSetTx();
+    // RadioSetRx();    
     Radio.Sleep( );
     Radio.SetPublicNetwork( 0 );
     //printf("net mode\r\n");
@@ -504,11 +492,44 @@ LoRaMacStatus_t LoRaMacInitialization( void )
 void LoRaMacStateCheck( void )
 {
     char byte;
-    uint16_t i;
     
     LoRaMacInitialization();
     while(stTmpCfgParm.inNetMode == TRUE)
     {
+        if(bRxComplete)
+        {
+            bRxComplete = 0;
+            onEvent(EV_RXCOMPLETE);
+            if(RxfCtrl.Bits.Ack)
+            {
+                //if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP1)
+                {
+                    putchar(',');
+                    putchar('A');
+                    putchar('1');
+                }
+                /*if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP2)
+                {
+                    putchar(',');
+                    putchar('A');
+                    putchar('2');
+                }*/
+            }
+            // RxDataLen = puthex (payload, (const uint8_t*) RadioTxBuffer, RxDataLen);
+            putchar(',');
+            for(uint8_t loop8 = 0;loop8 < RxDataLen;loop8++)
+            {
+                putchar(pRxDataBuf[loop8]);
+            }
+            putchar('\r');
+            putchar('\n');
+        }
+        if(bTxComplete)
+        {
+            bTxComplete = 0;
+            onEvent(EV_TXCOMPLETE);
+        }
+
         while(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
         {
             ring_buffer_dequeue(&uart_rx_ring_buf,&byte);
