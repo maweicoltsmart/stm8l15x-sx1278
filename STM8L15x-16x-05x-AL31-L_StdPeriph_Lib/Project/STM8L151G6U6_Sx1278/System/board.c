@@ -48,6 +48,8 @@ void ClearWWDG(void)
       //if ((WWDG_GetCounter() & 0x7F) < WINDOW_VALUE)
       /* Refresh WWDG counter during non allowed window so MCU reset will occur */
       //WWDG_SetCounter(COUNTER_INIT);
+    /* Reload IWDG counter */
+    IWDG_ReloadCounter();  
 }
 
 void RTC_Config(void)
@@ -138,6 +140,19 @@ Run_Mode_Type GetRunModePin(void)
     //return En_Low_Power_Mode;
 }
 
+void IWDG_Init(void)
+{
+    CLK_LSICmd(ENABLE);
+    while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);
+    CLK_BEEPClockConfig(CLK_BEEPCLKSource_LSI);
+    CLK_PeripheralClockConfig(CLK_Peripheral_BEEP, ENABLE);
+    IWDG_Enable();//记得先使能
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_256);
+    IWDG_SetReload((uint8_t)254);//RELOAD_VALUE=254? 1.724s
+    IWDG_ReloadCounter();
+}
+
 void BoardInitMcu( void )
 {
     BoardDisableIrq();
@@ -179,6 +194,7 @@ void BoardInitMcu( void )
     BEEP_Cmd(DISABLE);
     BEEP_LSClockToTIMConnectCmd(ENABLE);
     BEEP_LSICalibrationConfig(32768);
+    IWDG_Init();
     SpiInit( );
     SX1276IoInit( );
     init_crc8();

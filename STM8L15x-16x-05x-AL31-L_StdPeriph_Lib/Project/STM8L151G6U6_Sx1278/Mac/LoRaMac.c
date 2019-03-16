@@ -496,6 +496,7 @@ void LoRaMacStateCheck( void )
     LoRaMacInitialization();
     while(stTmpCfgParm.inNetMode == TRUE)
     {
+        ClearWWDG();
         if(bRxComplete)
         {
             bRxComplete = 0;
@@ -571,10 +572,16 @@ void LoRaMacStateCheck( void )
               stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
               break;
             case LORAMAC_JOINED_IDLE:
-              halt();
+              if((!bRxComplete) && (!bTxComplete))
+              {
+                  halt();
+              }
               break;
             case LORAMAC_TX_ING:
-              halt();
+              if((!bRxComplete) && (!bTxComplete))
+              {
+                  halt();
+              }
               break;
             case LORAMAC_TX_DONE:
               if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
