@@ -127,9 +127,9 @@ static void RadioSetTx(void)
     do{
           GlobalChannel = channellist[randr(0,enablechannel - 1)];//[loop3 % enablechannel];
           loop3 ++;
-    }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 410000000, -90, 5 ) && (loop3 < enablechannel * 2));
+    }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 1000000 + 410000000, -90, 5 ) && (loop3 < enablechannel * 2));
     GlobalDR = 12;//- GlobalChannel % 6;
-    Radio.SetChannel( GlobalChannel * 200000 + 410000000 );
+    Radio.SetChannel( GlobalChannel * 1000000 + 410000000 );
     Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 0,
                                    GlobalDR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
@@ -139,7 +139,7 @@ static void RadioSetTx(void)
 static void RadioSetRx(void)
 {
     Radio.Sleep( );
-    Radio.SetChannel( (GlobalChannel + 24)* 200000 + 410000000 );
+    Radio.SetChannel( (GlobalChannel + 24)* 1000000 + 410000000 );
 
     Radio.SetRxConfig( MODEM_LORA, 0, GlobalDR,
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
