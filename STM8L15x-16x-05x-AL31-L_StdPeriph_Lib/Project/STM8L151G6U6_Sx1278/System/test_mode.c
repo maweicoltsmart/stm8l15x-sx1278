@@ -7,6 +7,7 @@
 #include "delay.h"
 #include "comport.h"
 #include "timer.h"
+#include "modem.h"
 
 #define TX_OUTPUT_POWER                             20        // 20 dBm
 #define TX_TIMEOUT                                  65535     // seconds (MAX value)
@@ -144,6 +145,7 @@ void test_mode_routin(void)
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     while(1)//(GetRunModePin() == En_Test_Mode)
     {
+        ClearWWDG();
         switch(TestGetRunModePin())
         {
             case En_Config_Mode:
@@ -158,7 +160,10 @@ void test_mode_routin(void)
               Radio.Init( &TestModeRadioEvents );
               Radio.Sleep( );
               TestModeOnRadioTxTimeout();
-              while(TestGetRunModePin() == En_Normal_Mode);
+              while(TestGetRunModePin() == En_Normal_Mode)
+              {
+                  ClearWWDG();
+              }
               //halt();
               break;
             case En_Wake_Up_Mode:
@@ -171,7 +176,10 @@ void test_mode_routin(void)
                                        LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                        0, true, false, 0, LORA_IQ_INVERSION_ON, true );
               Radio.Rx( 0 ); // 0: receive RxContinuous
-              while(TestGetRunModePin() == En_Wake_Up_Mode);
+              while(TestGetRunModePin() == En_Wake_Up_Mode)
+              {
+                  ClearWWDG();
+              }
               //halt();
               putchar((uint8_t)(TestRssi & 0x00ff));
               putchar((uint8_t)((TestRssi & 0xff00) >> 8));
@@ -187,28 +195,42 @@ void test_mode_routin(void)
               {
                   volatile uint32_t timertick;
                   timertick = TimerGetCurrentTime( );
-                  while(TimerGetElapsedTime(timertick) < 300);
+                  while(TimerGetElapsedTime(timertick) < 300)
+                  {
+                      ClearWWDG();
+                  }
                   while(ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte))
                   {
                       if(cmdbyte == '"')
                       {
                           uint8_t datalen = 0;
-                          
+                          uint8_t checksn = 0;
                           do{
                               ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
                               factorystring[datalen ++] = cmdbyte;
                           }
                           while(cmdbyte != '"');
                           datalen --;
-                          factorystring[datalen - 1] = 0x00;
-                          for(int8_t index = 7;index >= 0;index -- )
+                          factorystring[datalen] = 0x00;
+                          uint8_t DEVEUITEMP[16] = {0};
+                          for(uint8_t testloop = 0;testloop < 16;testloop ++)
                           {
-                              LoRaMacDevEuiInFlash[index] = factorystring[-- datalen];
+                              DEVEUITEMP[testloop] = factorystring[datalen - 16 + testloop];
                           }
-                          putchar('o');
-                          putchar('k');
-                          putchar('!');
-                          putchar('!');
+                          checksn = gethex(DEVEUITEMP, DEVEUITEMP, 16);
+                          reverse(DEVEUITEMP, DEVEUITEMP, 8);
+                          for(uint8_t testloop = 0;testloop < 8;testloop ++)
+                          {
+                              LoRaMacDevEuiInFlash[testloop] = DEVEUITEMP[testloop];
+                          }
+                          if(checksn)
+                          {
+                              cfg_parm_factory_reset();
+                              putchar('o');
+                              putchar('k');
+                              putchar('!');
+                              putchar('!');
+                          }
                       }
                   }
               }
