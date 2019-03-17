@@ -222,7 +222,9 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                 stTmpCfgParm.LoRaMacDevAddr |= ( ( uint32_t )LoRaMacRxPayload[8] << 8 );
                 stTmpCfgParm.LoRaMacDevAddr |= ( ( uint32_t )LoRaMacRxPayload[9] << 16 );
                 stTmpCfgParm.LoRaMacDevAddr |= ( ( uint32_t )LoRaMacRxPayload[10] << 24 );
-
+                stTmpCfgParm.ChannelMask[0] = stTmpCfgParm.LoRaMacNetID & 0x000000ff;
+                stTmpCfgParm.ChannelMask[1] = (stTmpCfgParm.LoRaMacNetID & 0x0000ff00) >> 8;
+                stTmpCfgParm.ChannelMask[2] = (stTmpCfgParm.LoRaMacNetID & 0x00ff0000) >> 16;
                 stTmpCfgParm.netState = LORAMAC_JOINED;
                 cfg_parm_restore();
                 onEvent(EV_JOINED);
