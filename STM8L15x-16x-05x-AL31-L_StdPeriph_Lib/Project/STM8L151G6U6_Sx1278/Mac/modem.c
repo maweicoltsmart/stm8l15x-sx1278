@@ -4,6 +4,7 @@
 #include "radio.h"
 #include "cfg_parm.h"
 #include "LoRaMac.h"
+#include "comport.h"
 
 // transient state
 static struct {
@@ -35,15 +36,17 @@ void onEvent (ev_t ev)
           break;
     }*/
     //printf("%s\r\n",evnames[ev]);
+    BoardDisableIrq();
     for(uint8_t loop = 0;loop < strlen(evnames[ev]);loop ++)
     {
-        putchar(evnames[ev][loop]);
+        ringbuf_put(&uart_tx_ring_buf,evnames[ev][loop]);
     }
     if(ev != EV_RXCOMPLETE)
     {
-        putchar('\r');
-        putchar('\n');
+        ringbuf_put(&uart_tx_ring_buf,'\r');
+        ringbuf_put(&uart_tx_ring_buf,'\n');
     }
+    BoardEnableIrq();
 }
 
 // called by frame job
@@ -176,10 +179,12 @@ void modem_rxdone () {
     *rspbuf++ = '\r';
     *rspbuf++ = '\n';
     MODEM.rsplen = rspbuf - MODEM.cmdbuf;
+    BoardDisableIrq();
     for(uint8_t loop = 0;loop < MODEM.rsplen;loop ++)
     {
-        putchar(MODEM.cmdbuf[loop]);
+        ringbuf_put(&uart_tx_ring_buf,MODEM.cmdbuf[loop]);
     }
+    BoardEnableIrq();
     if(rst == true)
     {
         //Reset_Handler();
