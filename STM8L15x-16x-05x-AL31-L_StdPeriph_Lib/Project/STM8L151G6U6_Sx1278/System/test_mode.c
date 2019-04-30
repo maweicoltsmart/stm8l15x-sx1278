@@ -64,7 +64,7 @@ void TestModeOnRadioTxTimeout( void )
 {
     Radio.Sleep();
     //DelayMs(5);
-    Radio.SetTxContinuousWave( 433000000, TX_OUTPUT_POWER, TX_TIMEOUT );
+    Radio.SetTxContinuousWave( 433000000, stTmpCfgParm.TxPower, TX_TIMEOUT );
 }
 
 void TestModeOnTxDone( void )
