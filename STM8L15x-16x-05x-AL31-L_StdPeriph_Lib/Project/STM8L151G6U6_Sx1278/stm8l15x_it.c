@@ -176,8 +176,8 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    EXTI_ClearITPendingBit(EXTI_IT_Pin0);
-    // SX1276OnDio0Irq( NULL );
+    EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
+    SX1276OnDio3Irq( NULL );
 }
 
 /**
@@ -190,7 +190,8 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    EXTI_ClearITPendingBit(EXTI_IT_Pin1);
+    EXTI_ClearITPendingBit(SX1278_DIO2_EXTI_IT_PIN);
+    SX1276OnDio2Irq( NULL );
 }
 
 /**
@@ -207,12 +208,11 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     uint8_t byte = 0;
     uint8_t bit = 0;
 
-    EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);
+    EXTI_ClearITPendingBit(EXTI_IT_Pin2);
     //if(GetRunModePin() == En_Config_Mode)
-    //if(GPIO_ReadInputDataBit(SX1278_RX_PORT, SX1278_RX_PIN) == 0)
     {
         byte = 0;
-        delay_10us(15);
+        delay_10us(25);
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
@@ -220,7 +220,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
         }
         for(bits = 0;bits < 9;bits ++)
         {
-            delay_10us(79);
+            delay_10us(80);
             (bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
             bit = (GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN) & 0x04)?1:0;
             if(bits < 8)
@@ -236,7 +236,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
             }
         }
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
-        EXTI_ClearITPendingBit(SX1278_DIO3_EXTI_IT_PIN);;
+        EXTI_ClearITPendingBit(EXTI_IT_Pin2);;
     }
     /*else
     {
@@ -254,8 +254,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    EXTI_ClearITPendingBit(SX1278_DIO2_EXTI_IT_PIN);
-    SX1276OnDio2Irq( NULL );
+    EXTI_ClearITPendingBit(SX1278_M1_EXTI_IT_PIN);
 }
 
 /**
@@ -297,8 +296,7 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    EXTI_ClearITPendingBit(SX1278_DIO4_EXTI_IT_PIN);
-    //SX1276OnDio4Irq( NULL );
+    EXTI_ClearITPendingBit(SX1278_M0_EXTI_IT_PIN);
 }
 
 /**

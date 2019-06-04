@@ -1139,8 +1139,8 @@ void SX1276StartCad( void )
 
             SX1276.Settings.State = RF_CAD;
             SX1276SetOpMode( RFLR_OPMODE_CAD );
-            while(GPIO_ReadInputDataBit(SX1278_DIO3_PORT, SX1278_DIO3_PIN) == 0);
-            SX1276OnDio3Irq( NULL );
+            // while(GPIO_ReadInputDataBit(SX1278_DIO3_PORT, SX1278_DIO3_PIN) == 0);
+            // SX1276OnDio3Irq( NULL );
         }
         break;
     default:
