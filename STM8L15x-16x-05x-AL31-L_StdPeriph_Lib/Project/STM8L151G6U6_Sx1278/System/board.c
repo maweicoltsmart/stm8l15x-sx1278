@@ -169,6 +169,12 @@ void BoardInitMcu( void )
     GPIO_DeInit(GPIOC);
     GPIO_DeInit(GPIOD);
     InitRunModePin();
+    GPIO_Init(GPIOC, GPIO_Pin_5, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOA, GPIO_Pin_3, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOB, GPIO_Pin_0, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOB, GPIO_Pin_2, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOD, GPIO_Pin_0, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(SX1278_IO6_PORT, SX1278_IO6_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO6
     /*GPIO_Init(SX1278_IO5_PORT, SX1278_IO5_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO5
     GPIO_Init(SX1278_IO4_PORT, SX1278_IO4_PIN, GPIO_Mode_Out_PP_Low_Fast); // IO4

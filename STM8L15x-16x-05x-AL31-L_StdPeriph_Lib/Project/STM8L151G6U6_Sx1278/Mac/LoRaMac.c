@@ -365,7 +365,22 @@ static void LoRaMacOnRadioTxTimeout( void )
 
 static void LoRaMacOnRadioRxError( void )
 {
-    Radio.Sleep( );
+    if(GetRunModePin() == En_Normal_Mode)
+    {
+        // macHdr.Bits.RFU = CLASS_C;
+        RadioSetRx();
+        Radio.Rx(0);
+    }
+    else if(GetRunModePin() == En_Low_Power_Mode)
+    {
+      // macHdr.Bits.RFU = CLASS_B;
+    }
+    else
+    {
+        // macHdr.Bits.RFU = CLASS_A;
+        Radio.Sleep( );
+    }
+    
     /*if(stTmpCfgParm.netState > LORAMAC_JOINED)
     {
         stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
@@ -604,6 +619,7 @@ void LoRaMacStateCheck( void )
               else
               {
                   // macHdr.Bits.RFU = CLASS_A;
+                  Radio.Sleep( );
               }
               if((ring_buffer_is_empty(&uart_rx_ring_buf)) && (ring_buffer_is_empty(&uart_tx_ring_buf)))
               {
@@ -617,16 +633,31 @@ void LoRaMacStateCheck( void )
               }
               break;
             case LORAMAC_TX_DONE:
-              if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
+              if(GetRunModePin() == En_Normal_Mode)
               {
-                  
+                  // macHdr.Bits.RFU = CLASS_C;
+                  stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
+              }
+              else if(GetRunModePin() == En_Low_Power_Mode)
+              {
+                  // macHdr.Bits.RFU = CLASS_B;
+                  stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
               }
               else
               {
-                  RadioSetRx();
-                  Radio.Rx(2200);
-                  stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP1;
+                  // macHdr.Bits.RFU = CLASS_A;
+                  if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
+                  {
+                      
+                  }
+                  else
+                  {
+                      RadioSetRx();
+                      Radio.Rx(2200);
+                      stTmpCfgParm.netState = LORAMAC_TX_WAIT_RESP1;
+                  }
               }
+              
               break;
             case LORAMAC_TX_WAIT_RESP1:
               if(TimerGetElapsedTime(TxDoneTimerTick) < 3100)

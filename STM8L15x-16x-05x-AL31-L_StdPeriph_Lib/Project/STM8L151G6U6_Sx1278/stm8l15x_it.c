@@ -212,7 +212,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     //if(GetRunModePin() == En_Config_Mode)
     {
         byte = 0;
-        delay_10us(25);
+        delay_10us(15);
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
