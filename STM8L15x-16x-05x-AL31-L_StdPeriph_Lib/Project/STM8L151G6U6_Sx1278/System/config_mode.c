@@ -64,11 +64,13 @@ void config_mode_routin(void)
                 {
                     cfg_parm_restore();
                 }
+                GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                 putchar(cmdbyte);
                 for(uint8_t i = 0;i < 5;i ++)
                 {
                     putchar(cmdbuf[i]);
                 }
+                GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                 break;
               case 0xC1:
                 DelayMs(10);
@@ -86,10 +88,12 @@ void config_mode_routin(void)
                     cmdbuf[3] = stTmpCfgParm.speed.speed;
                     cmdbuf[4] = stTmpCfgParm.channel.channel;
                     cmdbuf[5] = stTmpCfgParm.option.option;
+                    GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                     for(uint8_t i = 0;i < 6;i ++)
                     {
                         putchar(cmdbuf[i]);
                     }
+                    GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                 }
                 break;
               case 0xC3:
@@ -106,10 +110,12 @@ void config_mode_routin(void)
                     cmdbuf[1] = 0x32; // 433mhz
                     cmdbuf[2] = 0x44;
                     cmdbuf[3] = 0x14;
+                    GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                     for(uint8_t i = 0;i < 4;i ++)
                     {
                         putchar(cmdbuf[i]);
                     }
+                    GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                 }
                 break;
               case 0xC4:
@@ -148,10 +154,12 @@ void config_mode_routin(void)
                     cmdbuf[0] = 0xCF;
                     cmdbuf[1] = 0xCF; // 433mhz
                     cmdbuf[2] = stTmpCfgParm.inNetMode;
+                    GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                     for(uint8_t i = 0;i < 3;i ++)
                     {
                         putchar(cmdbuf[i]);
                     }
+                    GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                 }
                 break;
               default:

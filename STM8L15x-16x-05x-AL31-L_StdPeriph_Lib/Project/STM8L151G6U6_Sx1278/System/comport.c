@@ -139,6 +139,7 @@ void ComportTxStart(void)
     char temp = 0;
     if((USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET) && (!ring_buffer_is_empty(&uart_tx_ring_buf)))
     {
+        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         GPIO_ResetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
         DelayMs(2);
         ring_buffer_dequeue(&uart_tx_ring_buf, &temp);

@@ -565,11 +565,13 @@ void LoRaMacStateCheck( void )
             ring_buffer_dequeue(&uart_rx_ring_buf,&byte);
             frame_rx(byte);
         }
+        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         while(ring_buffer_num_items(&uart_tx_ring_buf) > 0)
         {
             ring_buffer_dequeue(&uart_tx_ring_buf,&byte);
             putchar(byte);
         }
+        GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         switch(stTmpCfgParm.netState)
         {
             case LORAMAC_IDLE:

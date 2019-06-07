@@ -181,10 +181,12 @@ void test_mode_routin(void)
                   ClearWWDG();
               }
               //halt();
+              GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
               putchar((uint8_t)(TestRssi & 0x00ff));
               putchar((uint8_t)((TestRssi & 0xff00) >> 8));
               putchar((uint8_t)(TestSnr & 0x00ff));
               putchar((uint8_t)((TestSnr & 0xff00) >> 8));
+              GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
               break;
             case En_Low_Power_Mode:
               Radio.Sleep( );
@@ -226,10 +228,12 @@ void test_mode_routin(void)
                           if(checksn)
                           {
                               cfg_parm_factory_reset();
+                              GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                               putchar('o');
                               putchar('k');
                               putchar('!');
                               putchar('!');
+                              GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
                           }
                       }
                   }

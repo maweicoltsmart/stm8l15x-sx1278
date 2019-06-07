@@ -213,7 +213,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     {
         byte = 0;
         delay_10us(15);
-        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+        //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
             return;
@@ -221,7 +221,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
         for(bits = 0;bits < 9;bits ++)
         {
             delay_10us(80);
-            (bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+            //(bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
             bit = (GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN) & 0x04)?1:0;
             if(bits < 8)
             {
@@ -235,7 +235,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
                 }
             }
         }
-        GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+        //GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         EXTI_ClearITPendingBit(EXTI_IT_Pin2);;
     }
     /*else
@@ -465,6 +465,8 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
             /* Disable the USART Transmit Complete interrupt */
             USART_ITConfig(USART1, USART_IT_TC, DISABLE);
             GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
+            GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
+            
         }
     }
 }
