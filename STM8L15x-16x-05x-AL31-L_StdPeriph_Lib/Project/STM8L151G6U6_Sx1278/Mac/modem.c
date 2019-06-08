@@ -163,6 +163,26 @@ void modem_rxdone () {
                 memcpy(stTmpCfgParm.ChannelMask,tmp,3);
                 reverse(stTmpCfgParm.ChannelMask, stTmpCfgParm.ChannelMask, 3);
                 cfg_parm_restore();
+                
+                extern void RadioSetRx(void);
+                extern void RadioSetTx(void);
+                RadioSetTx();
+                if(GetRunModePin() == En_Normal_Mode)
+                {
+                  // macHdr.Bits.RFU = CLASS_C;
+                    //RadioSetTx();
+                    RadioSetRx();
+                    Radio.Rx(0);
+                }
+                else if(GetRunModePin() == En_Low_Power_Mode)
+                {
+                    // macHdr.Bits.RFU = CLASS_B;
+                }
+                else
+                {
+                    // macHdr.Bits.RFU = CLASS_A;
+                    Radio.Sleep( );
+                }
                 ok = 1;
             }
         }

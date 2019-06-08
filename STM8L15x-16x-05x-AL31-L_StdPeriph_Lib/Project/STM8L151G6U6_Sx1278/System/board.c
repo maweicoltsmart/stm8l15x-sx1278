@@ -127,9 +127,9 @@ void InitRunModePin(void)
 
 Run_Mode_Type GetRunModePin(void)
 {
-    if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN))
+    /*if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN))
       return En_Test_Mode;
-    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
+    else */if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Normal_Mode;
     else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN)) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Wake_Up_Mode;
