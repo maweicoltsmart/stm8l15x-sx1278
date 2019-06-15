@@ -8,7 +8,7 @@
 
 // transient state
 static struct {
-    uint8_t cmdbuf[128];
+    uint8_t cmdbuf[100 * 2 + 12];
     uint16_t rsplen;
     uint8_t txpending;
     //osjob_t alarmjob;
@@ -36,17 +36,20 @@ void onEvent (ev_t ev)
           break;
     }*/
     //printf("%s\r\n",evnames[ev]);
-    BoardDisableIrq();
+    //BoardDisableIrq();
     for(uint8_t loop = 0;loop < strlen(evnames[ev]);loop ++)
     {
-        ringbuf_put(&uart_tx_ring_buf,evnames[ev][loop]);
+        //ringbuf_put(&uart_tx_ring_buf,evnames[ev][loop]);
+        putchar(evnames[ev][loop]);
     }
-    if(ev != EV_RXCOMPLETE)
+    putchar('\r');
+    putchar('\n');
+    /*if(ev != EV_RXCOMPLETE)
     {
         ringbuf_put(&uart_tx_ring_buf,'\r');
         ringbuf_put(&uart_tx_ring_buf,'\n');
-    }
-    BoardEnableIrq();
+    }*/
+    //BoardEnableIrq();
 }
 
 // called by frame job
@@ -127,7 +130,7 @@ void modem_rxdone () {
         }
         if(stTmpCfgParm.netState == LORAMAC_JOINED_IDLE)
         {
-            if(len == 5 || datalen <= 51) {
+            if(len == 5 || datalen <= 200) {
                 if((port > 0) && (port < 224)){
                     stTmpCfgParm.netState = LORAMAC_TX_ING;
                     ok = SendFrameOnChannel(channel,MODEM.cmdbuf,datalen,comfirm,port);
@@ -202,7 +205,7 @@ void modem_rxdone () {
     BoardDisableIrq();
     for(uint8_t loop = 0;loop < MODEM.rsplen;loop ++)
     {
-        ringbuf_put(&uart_tx_ring_buf,MODEM.cmdbuf[loop]);
+        putchar(MODEM.cmdbuf[loop]);//ringbuf_put(&uart_tx_ring_buf,MODEM.cmdbuf[loop]);
     }
     BoardEnableIrq();
     if(rst == true)

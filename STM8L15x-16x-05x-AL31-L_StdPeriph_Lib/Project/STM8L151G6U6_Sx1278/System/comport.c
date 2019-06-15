@@ -5,7 +5,7 @@
 #include "board.h"
 #include "delay.h"
 
-ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
+ring_buffer_t uart_rx_ring_buf;//,uart_tx_ring_buf;
 
 void ComportInit(void)
 {
@@ -13,7 +13,7 @@ void ComportInit(void)
     USART_Cmd(USART1, DISABLE);
     USART_DeInit(USART1);
     ring_buffer_init(&uart_rx_ring_buf);
-    ring_buffer_init(&uart_tx_ring_buf);
+    //ring_buffer_init(&uart_tx_ring_buf);
     /* Enable USART clock */
     CLK_PeripheralClockConfig(CLK_Peripheral_USART1, ENABLE);
     
@@ -133,7 +133,7 @@ GETCHAR_PROTOTYPE
     c = USART_ReceiveData8(USART1);
     return (c);
  }
-
+/*
 void ComportTxStart(void)
 {
     char temp = 0;
@@ -145,4 +145,4 @@ void ComportTxStart(void)
         USART_SendData8(USART1, temp);
         USART_ITConfig(USART1, USART_IT_TC, ENABLE);
     }
-}
+}*/

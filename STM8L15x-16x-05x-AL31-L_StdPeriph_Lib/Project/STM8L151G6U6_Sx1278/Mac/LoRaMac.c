@@ -126,7 +126,7 @@ void RadioSetTx(void)
           GlobalChannel = channellist[randr(0,enablechannel - 1)];//[loop3 % enablechannel];
           loop3 ++;
     }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 428200000, -90, 5 ) && (loop3 < enablechannel * 2));
-    GlobalDR = 12;//- GlobalChannel % 6;
+    GlobalDR = 7;//- GlobalChannel % 6;
     Radio.SetChannel( GlobalChannel * 200000 + 428200000 );
     Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 0,
                                    GlobalDR, LORA_CODINGRATE,
@@ -144,8 +144,18 @@ void RadioSetRx(void)
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, false, 0, LORA_IQ_INVERSION_ON, true );
 }
-
+static uint8_t *RxDonepayload;
+static uint16_t RxDonesize;
+static int16_t RxDonerssi;
+static int8_t RxDonesnr;
+static bool RxDoneFlag = false;
+static bool TxDoneFlag = false;
 static void LoRaMacOnRadioTxDone( void )
+{
+    TxDoneFlag = true;
+    Radio.Sleep( );
+}
+static void LoRaMacOnRadioTxDoneInLoop( void )
 {
     TxDoneTimerTick = TimerGetCurrentTime( );
     if(stTmpCfgParm.netState >= LORAMAC_JOINED)
@@ -162,6 +172,15 @@ static void LoRaMacOnRadioTxDone( void )
 }
 
 static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
+{
+    RxDonepayload = payload;
+    RxDonesize = size;
+    RxDonerssi = rssi;
+    RxDonesnr = snr;
+    RxDoneFlag = true;
+    Radio.Sleep( );
+}
+static void LoRaMacOnRadioRxDoneInLoop( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
     LoRaMacHeader_t macHdr;
     //LoRaMacFrameCtrl_t fCtrl;
@@ -306,9 +325,9 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                         {
                             //if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP1)
                             {
-                                ringbuf_put(&uart_tx_ring_buf,',');
-                                ringbuf_put(&uart_tx_ring_buf,'A');
-                                ringbuf_put(&uart_tx_ring_buf,'1');
+                                putchar(',');//ringbuf_put(&uart_tx_ring_buf,',');
+                                putchar('A');//ringbuf_put(&uart_tx_ring_buf,'A');
+                                putchar('1');//ringbuf_put(&uart_tx_ring_buf,'1');
                             }
                             /*if(stTmpCfgParm.netState == LORAMAC_TX_WAIT_RESP2)
                             {
@@ -318,20 +337,21 @@ static void LoRaMacOnRadioRxDone( uint8_t *payload, uint16_t size, int16_t rssi,
                             }*/
                         }
                         // RxDataLen = puthex (payload, (const uint8_t*) RadioTxBuffer, RxDataLen);
-                        ringbuf_put(&uart_tx_ring_buf,',');
+                        putchar(',');//ringbuf_put(&uart_tx_ring_buf,',');
                         uint8_t temphexbyte[2];
                         RxDataLen = 0;
                         RxDataLen += puthex (temphexbyte, &port, 1);
-                        ring_buffer_queue_arr(&uart_tx_ring_buf, temphexbyte, 2);
-                        ringbuf_put(&uart_tx_ring_buf,',');
+                        putchar(temphexbyte[0]);putchar(temphexbyte[1]);//ring_buffer_queue_arr(&uart_tx_ring_buf, temphexbyte, 2);
+                        putchar(',');//ringbuf_put(&uart_tx_ring_buf,',');
                         RxDataLen += 1;
                         for(uint8_t loop8 = 0;loop8 < frameLen;loop8++)
                         {
                             RxDataLen += puthex (temphexbyte, (const uint8_t*) &LoRaMacRxPayload[loop8], 1);
-                            ring_buffer_queue_arr(&uart_tx_ring_buf, temphexbyte, 2);
+                            
+                            putchar(temphexbyte[0]);putchar(temphexbyte[1]);//ring_buffer_queue_arr(&uart_tx_ring_buf, temphexbyte, 2);
                         }
-                        ringbuf_put(&uart_tx_ring_buf,'\r');
-                        ringbuf_put(&uart_tx_ring_buf,'\n');
+                        putchar('\r');//ringbuf_put(&uart_tx_ring_buf,'\r');
+                        putchar('\n');//ringbuf_put(&uart_tx_ring_buf,'\n');
 
                     }
                 }
@@ -512,7 +532,7 @@ LoRaMacStatus_t SendJoinRequest( void )
     LoRaMacBuffer[pktHeaderLen++] = ( mic >> 24 ) & 0xFF;
     // BoardDisableIrq();
     Radio.Sleep( );
-    RTC_WakeUpCmd(DISABLE);
+    //RTC_WakeUpCmd(DISABLE);
     RadioSetTx();
     // Send now
     Radio.Send( LoRaMacBuffer, pktHeaderLen );
@@ -559,17 +579,28 @@ void LoRaMacStateCheck( void )
     while(stTmpCfgParm.inNetMode == TRUE)
     {
         ClearWWDG();
-
+        if(RxDoneFlag)
+        {
+            RxDoneFlag = false;
+            LoRaMacOnRadioRxDoneInLoop(RxDonepayload,RxDonesize,RxDonerssi,RxDonesnr);
+        }
+        if(TxDoneFlag)
+        {
+            TxDoneFlag = false;
+            LoRaMacOnRadioTxDoneInLoop();
+        }
         while(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
         {
+            BoardDisableIrq();
             ring_buffer_dequeue(&uart_rx_ring_buf,&byte);
+            BoardEnableIrq();
             frame_rx(byte);
         }
-        while(ring_buffer_num_items(&uart_tx_ring_buf) > 0)
+        /*while(ring_buffer_num_items(&uart_tx_ring_buf) > 0)
         {
             ring_buffer_dequeue(&uart_tx_ring_buf,&byte);
             putchar(byte);
-        }
+        }*/
         switch(stTmpCfgParm.netState)
         {
             case LORAMAC_IDLE:
@@ -577,7 +608,7 @@ void LoRaMacStateCheck( void )
               stTmpCfgParm.netState = LORAMAC_JOINING;
               break;
             case LORAMAC_JOINING:
-              halt();
+              //halt();
               break;
             case LORAMAC_JOIN_TX_DONE:
               if(TimerGetElapsedTime(TxDoneTimerTick) < 900)
@@ -606,30 +637,33 @@ void LoRaMacStateCheck( void )
               stTmpCfgParm.netState = LORAMAC_JOINED_IDLE;
               break;
             case LORAMAC_JOINED_IDLE:
-              if(GetRunModePin() == En_Normal_Mode)
+              if(Radio.GetStatus() != RF_TX_RUNNING)
               {
-                  // macHdr.Bits.RFU = CLASS_C;
-                  RadioSetRx();
-                  Radio.Rx(0);
+                  if(GetRunModePin() == En_Normal_Mode)
+                  {
+                      // macHdr.Bits.RFU = CLASS_C;
+                      RadioSetRx();
+                      Radio.Rx(0);
+                  }
+                  else if(GetRunModePin() == En_Low_Power_Mode)
+                  {
+                      // macHdr.Bits.RFU = CLASS_B;
+                  }
+                  else
+                  {
+                      // macHdr.Bits.RFU = CLASS_A;
+                      Radio.Sleep( );
+                  }
               }
-              else if(GetRunModePin() == En_Low_Power_Mode)
+              if((ring_buffer_is_empty(&uart_rx_ring_buf)))// && (ring_buffer_is_empty(&uart_tx_ring_buf)))
               {
-                  // macHdr.Bits.RFU = CLASS_B;
-              }
-              else
-              {
-                  // macHdr.Bits.RFU = CLASS_A;
-                  Radio.Sleep( );
-              }
-              if((ring_buffer_is_empty(&uart_rx_ring_buf)) && (ring_buffer_is_empty(&uart_tx_ring_buf)))
-              {
-                  halt();
+                  //halt();
               }
               break;
             case LORAMAC_TX_ING:
-              if((ring_buffer_is_empty(&uart_rx_ring_buf)) && (ring_buffer_is_empty(&uart_tx_ring_buf)))
+              if((ring_buffer_is_empty(&uart_rx_ring_buf)))// && (ring_buffer_is_empty(&uart_tx_ring_buf)))
               {
-                  halt();
+                  //halt();
               }
               break;
             case LORAMAC_TX_DONE:

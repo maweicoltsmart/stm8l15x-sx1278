@@ -55,7 +55,7 @@ void cfg_parm_factory_reset(void)
     //stTmpCfgParm.LoRaMacAppSKey = ;
     stTmpCfgParm.UpLinkCounter = 0;
     stTmpCfgParm.DownLinkCounter = 0;
-    stTmpCfgParm.ChannelMask[0] = 0x41;
+    stTmpCfgParm.ChannelMask[0] = 0x01;
     stTmpCfgParm.ChannelMask[1] = 0x00;
     stTmpCfgParm.ChannelMask[2] = 0x00;
     stTmpCfgParm.TxPower = 20;

@@ -1330,10 +1330,12 @@ void SX1276SetMaxPayloadLength( RadioModems_t modem, uint8_t max )
     switch( modem )
     {
     case MODEM_FSK:
+#if 0
         if( SX1276.Settings.Fsk.FixLen == false )
         {
             SX1276Write( REG_PAYLOADLENGTH, max );
         }
+#endif
         break;
     case MODEM_LORA:
         SX1276Write( REG_LR_PAYLOADMAXLENGTH, max );

@@ -452,8 +452,9 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
     /* In order to detect unexpected events during development,
        it is recommended to set a breakpoint on the following instruction.
     */
-    char temp;
+    //char temp;
     USART_ClearITPendingBit(USART1, USART_IT_TC);
+#if 0
     if(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == SET)
     {
         if(ring_buffer_dequeue(&uart_tx_ring_buf, &temp) > 0)
@@ -467,6 +468,7 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27)
             GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
         }
     }
+#endif
 }
 
 /**

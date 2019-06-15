@@ -203,7 +203,7 @@ void BoardInitMcu( void )
     IWDG_Init();
     SpiInit( );
     SX1276IoInit( );
-    init_crc8();
+    //init_crc8();
     BoardEnableIrq();
     ClearWWDG();
 }

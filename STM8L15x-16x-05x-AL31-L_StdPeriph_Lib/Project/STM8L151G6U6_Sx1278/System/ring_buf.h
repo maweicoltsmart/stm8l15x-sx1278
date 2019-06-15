@@ -55,8 +55,8 @@
 #define RINGBUF_H_
 #include "system.h"
 
-#define UART_RX_BUF_SIZE                128
-#define UART_TX_BUF_SIZE                128
+//#define UART_RX_BUF_SIZE                32
+//#define UART_TX_BUF_SIZE                32
 #define MAX_RING_BUF_SIZE                128
 
 /** \def CC_ACCESS_NOW(x)

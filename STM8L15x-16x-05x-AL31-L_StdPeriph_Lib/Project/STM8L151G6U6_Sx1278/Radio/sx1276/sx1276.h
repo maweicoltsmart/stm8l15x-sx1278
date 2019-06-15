@@ -122,8 +122,8 @@ typedef struct
     RadioState_t             State;
     RadioModems_t            Modem;
     uint32_t                 Channel;
-    RadioFskSettings_t       Fsk;
-    RadioFskPacketHandler_t  FskPacketHandler;
+    //RadioFskSettings_t       Fsk;
+    //RadioFskPacketHandler_t  FskPacketHandler;
     RadioLoRaSettings_t      LoRa;
     RadioLoRaPacketHandler_t LoRaPacketHandler;
 }RadioSettings_t;
@@ -155,7 +155,7 @@ typedef void ( DioIrqHandler )( void* context );
 #define XTAL_FREQ                                   32000000
 #define FREQ_STEP                                   61.03515625
 
-#define RX_BUFFER_SIZE                              58
+#define RX_BUFFER_SIZE                              (200 + 10)
 
 /*!
  * ============================================================================
