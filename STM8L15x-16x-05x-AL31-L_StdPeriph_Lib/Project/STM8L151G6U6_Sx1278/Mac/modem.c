@@ -8,7 +8,7 @@
 
 // transient state
 static struct {
-    uint8_t cmdbuf[100 * 2 + 12];
+    uint8_t cmdbuf[200 * 2 + 12];
     uint16_t rsplen;
     uint8_t txpending;
     //osjob_t alarmjob;
