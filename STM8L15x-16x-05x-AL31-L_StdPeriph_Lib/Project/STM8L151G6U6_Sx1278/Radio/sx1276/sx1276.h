@@ -155,7 +155,7 @@ typedef void ( DioIrqHandler )( void* context );
 #define XTAL_FREQ                                   32000000
 #define FREQ_STEP                                   61.03515625
 
-#define RX_BUFFER_SIZE                              (200 + 10)
+#define RX_BUFFER_SIZE                              (200 + 13)
 
 /*!
  * ============================================================================

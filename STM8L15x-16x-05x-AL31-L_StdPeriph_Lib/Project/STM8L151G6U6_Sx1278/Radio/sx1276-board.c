@@ -68,7 +68,7 @@ const struct Radio_s Radio =
     SX1276Read,
     SX1276WriteBuffer,
     SX1276ReadBuffer,
-    NULL,//SX1276SetMaxPayloadLength,
+    SX1276SetMaxPayloadLength,
     SX1276SetPublicNetwork,
     NULL,//SX1276GetWakeupTime,
     NULL, // void ( *IrqProcess )( void )

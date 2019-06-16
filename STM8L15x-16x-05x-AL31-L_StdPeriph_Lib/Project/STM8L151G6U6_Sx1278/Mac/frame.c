@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "stm8l15x.h"
 #include "modem.h"
 
 FRAME rxframe;
@@ -49,7 +50,7 @@ void frame_init (FRAME* f, uint8_t* buf, uint16_t max) {
 	return 0;
     }
 }*/
-
+bool modem_rxdone_flag = FALSE;
 // called by usart irq handler (pass received char, return 1 to continue rx, 0 to stop)
 // ASCII format:  ATxxxxxxx\r
 // Binary format: B%lxxxxxxxx%c
@@ -75,12 +76,14 @@ uint8_t frame_rx (uint8_t c) {
     case FRAME_A_T:
 	if(c == '\r') {
 	    rxframe.state = FRAME_A_OK;
-	    modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+	    //modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+            modem_rxdone_flag = TRUE;
 	    return 0; // stop reception
 	} else {
 	    if(rxframe.len == rxframe.max) { // overflow
 		rxframe.state = FRAME_A_ERR;
-		modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+		//modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+                modem_rxdone_flag = TRUE;
 		return 0; // stop reception
 	    }
 	    rxframe.buf[rxframe.len++] = c; // store cmd
@@ -89,7 +92,8 @@ uint8_t frame_rx (uint8_t c) {
     case FRAME_B_B:
 	if(c > rxframe.max) {
 	    rxframe.state = FRAME_B_ERR;
-	    modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+	    //modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+            modem_rxdone_flag = TRUE;
 	    return 0; // stop reception
 	}
 	rxframe.max = c; // store len
@@ -109,7 +113,8 @@ uint8_t frame_rx (uint8_t c) {
 	} else {
 	    rxframe.state = FRAME_B_OK;
 	}
-	modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+	//modem_rxdone();//os_setCallback(&rxjob, modem_rxdone); // run job
+        modem_rxdone_flag = TRUE;
 	return 0; // stop reception
     }
     return 1; // continue to receive

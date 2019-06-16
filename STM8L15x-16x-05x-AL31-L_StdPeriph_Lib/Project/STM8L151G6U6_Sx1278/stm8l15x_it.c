@@ -114,7 +114,7 @@ INTERRUPT_HANDLER(DMA1_CHANNEL2_3_IRQHandler,3)
   * @param  None
   * @retval None
   */
-extern ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
+//extern ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
     /* In order to detect unexpected events during development,
@@ -212,7 +212,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
     //if(GetRunModePin() == En_Config_Mode)
     {
         byte = 0;
-        delay_10us(15);
+        delay_10us(20);
         GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
         if(GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN))
         {
@@ -231,7 +231,8 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
             {
                 //if(bit == 1)
                 {
-                    ring_buffer_queue(&uart_rx_ring_buf,byte);
+                    //ring_buffer_queue(&uart_rx_ring_buf,byte);
+                    frame_rx(byte);
                 }
             }
         }
@@ -482,7 +483,7 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28)
        it is recommended to set a breakpoint on the following instruction.
     */
     USART_ClearITPendingBit(USART1, USART_IT_RXNE);
-    ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
+    //ring_buffer_queue(&uart_rx_ring_buf,USART_ReceiveData8(USART1));
 }
 
 /**

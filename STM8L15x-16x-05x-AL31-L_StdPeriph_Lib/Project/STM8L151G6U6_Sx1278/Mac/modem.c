@@ -8,7 +8,7 @@
 
 // transient state
 static struct {
-    uint8_t cmdbuf[200 * 2 + 12];
+    uint8_t cmdbuf[200 * 2 + 10];
     uint16_t rsplen;
     uint8_t txpending;
     //osjob_t alarmjob;
@@ -130,7 +130,7 @@ void modem_rxdone () {
         }
         if(stTmpCfgParm.netState == LORAMAC_JOINED_IDLE)
         {
-            if(len == 5 || datalen <= 200) {
+            if(len == 5 || ((datalen > 0) && (datalen <= 200))) {
                 if((port > 0) && (port < 224)){
                     stTmpCfgParm.netState = LORAMAC_TX_ING;
                     ok = SendFrameOnChannel(channel,MODEM.cmdbuf,datalen,comfirm,port);
@@ -189,6 +189,47 @@ void modem_rxdone () {
                 ok = 1;
             }
         }
+    }else if(cmd == 'm' && len >= 2) { // CHANNEL parameters
+        if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATC? query (channel mask)
+            rspbuf += cpystr(rspbuf, "OK,");
+            rspbuf += puthex(rspbuf, &stTmpCfgParm.classtype, 1);
+            ok = 1;
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+2) { // ATC= set (channel mask)
+            uint8_t tmp[3];
+            if( gethex(tmp, MODEM.cmdbuf+2, 2) == 1) {
+                if((tmp[0] != 0x01) && (tmp[0] != 0x02))
+                {
+                    ok = 0;
+                }
+                else
+                {
+                    stTmpCfgParm.classtype = tmp[0];
+                    cfg_parm_restore();
+                    ok = 1;
+                }
+            }
+        }
+    }
+    else if(cmd == 's' && len >= 2) { // CHANNEL parameters
+        if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATC? query (channel mask)
+            rspbuf += cpystr(rspbuf, "OK,");
+            rspbuf += puthex(rspbuf, &stTmpCfgParm.netspeed, 1);
+            ok = 1;
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+2) { // ATC= set (channel mask)
+            uint8_t tmp[3];
+            if( gethex(tmp, MODEM.cmdbuf+2, 2) == 1) {
+                if((tmp[0] > 12) || (tmp[0] < 7))
+                {
+                    ok = 0;
+                }
+                else
+                {
+                    stTmpCfgParm.netspeed = tmp[0];
+                    cfg_parm_restore();
+                    ok = 1;
+                }
+            }
+        }
     }
 
     // send response
@@ -202,12 +243,12 @@ void modem_rxdone () {
     *rspbuf++ = '\r';
     *rspbuf++ = '\n';
     MODEM.rsplen = rspbuf - MODEM.cmdbuf;
-    BoardDisableIrq();
+    //BoardDisableIrq();
     for(uint8_t loop = 0;loop < MODEM.rsplen;loop ++)
     {
         putchar(MODEM.cmdbuf[loop]);//ringbuf_put(&uart_tx_ring_buf,MODEM.cmdbuf[loop]);
     }
-    BoardEnableIrq();
+    //BoardEnableIrq();
     if(rst == true)
     {
         //Reset_Handler();

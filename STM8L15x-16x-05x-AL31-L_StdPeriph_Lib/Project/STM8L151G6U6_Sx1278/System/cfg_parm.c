@@ -59,6 +59,8 @@ void cfg_parm_factory_reset(void)
     stTmpCfgParm.ChannelMask[1] = 0x00;
     stTmpCfgParm.ChannelMask[2] = 0x00;
     stTmpCfgParm.TxPower = 20;
+    stTmpCfgParm.classtype = 0x01;// 0x01 Class A, 0x02 Class C; Class A by default
+    stTmpCfgParm.netspeed = 7;
 
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
     stNvCfgParm.addr_l = stTmpCfgParm.addr_l;
@@ -83,6 +85,8 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.ChannelMask[1] = stTmpCfgParm.ChannelMask[1];
     stNvCfgParm.ChannelMask[2] = stTmpCfgParm.ChannelMask[2];
     stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
+    stNvCfgParm.classtype = stTmpCfgParm.classtype;
+    stNvCfgParm.netspeed = stTmpCfgParm.netspeed;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
@@ -116,6 +120,8 @@ void cfg_parm_restore(void)
     stNvCfgParm.ChannelMask[1] = stTmpCfgParm.ChannelMask[1];
     stNvCfgParm.ChannelMask[2] = stTmpCfgParm.ChannelMask[2];
     stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
+    stNvCfgParm.classtype = stTmpCfgParm.classtype;
+    stNvCfgParm.netspeed = stTmpCfgParm.netspeed;
 }
 
 void cfg_parm_dump_to_ram(void)
@@ -151,6 +157,8 @@ void cfg_parm_dump_to_ram(void)
     stTmpCfgParm.ChannelMask[1] = stNvCfgParm.ChannelMask[1];
     stTmpCfgParm.ChannelMask[2] = stNvCfgParm.ChannelMask[2];
     stTmpCfgParm.TxPower = stNvCfgParm.TxPower;
+    stTmpCfgParm.classtype = stNvCfgParm.classtype;
+    stTmpCfgParm.netspeed = stNvCfgParm.netspeed;
 }
 
 uint8_t cfg_parm_get_tx_power(void)

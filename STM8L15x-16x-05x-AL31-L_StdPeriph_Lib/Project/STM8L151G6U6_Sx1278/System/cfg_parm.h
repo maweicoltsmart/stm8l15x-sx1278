@@ -64,6 +64,8 @@ struct cfg_pkg{
     uint32_t DownLinkCounter;
     unsigned char ChannelMask[3];
     unsigned char TxPower;
+    uint8_t classtype;
+    uint8_t netspeed;
 };
 typedef struct cfg_pkg st_cfg_pkg;
 typedef struct cfg_pkg* pst_cfg_pkg;
