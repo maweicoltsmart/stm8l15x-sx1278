@@ -42,8 +42,11 @@ void onEvent (ev_t ev)
         //ringbuf_put(&uart_tx_ring_buf,evnames[ev][loop]);
         putchar(evnames[ev][loop]);
     }
-    putchar('\r');
-    putchar('\n');
+    if(ev != EV_RXCOMPLETE)
+    {
+        putchar('\r');
+        putchar('\n');
+    }
     /*if(ev != EV_RXCOMPLETE)
     {
         ringbuf_put(&uart_tx_ring_buf,'\r');

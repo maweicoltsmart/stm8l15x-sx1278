@@ -668,6 +668,7 @@ void LoRaMacStateCheck( void )
                       if(Radio.GetStatus() != RF_RX_RUNNING)
                       {
                           // macHdr.Bits.RFU = CLASS_C;
+                          RadioSetTx();
                           RadioSetRx();
                           Radio.Rx(0);
                       }
