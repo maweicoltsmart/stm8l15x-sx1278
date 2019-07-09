@@ -64,9 +64,9 @@ void main(void)
         {
             LoRaMacStateCheck();
         }
-        /*switch(run_mode)
+        switch(run_mode)
         {
-            case En_Normal_Mode:
+            /*case En_Normal_Mode:
               normal_mode_routin();
               break;
             case En_Wake_Up_Mode:
@@ -77,11 +77,11 @@ void main(void)
               break;
             case En_Config_Mode:
               config_mode_routin();
-              break;
+              break;*/
             case En_Test_Mode:
-              test_mode_routin();
+              //test_mode_routin();
               break;
-        }*/
+        }
     }
 }
 

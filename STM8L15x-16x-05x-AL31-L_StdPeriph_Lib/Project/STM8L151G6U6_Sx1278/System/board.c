@@ -121,24 +121,15 @@ void InitRunModePin(void)
     GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
     //EXTI_SetPinSensitivity(SX1278_M0_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M0
     //EXTI_SetPinSensitivity(SX1278_M1_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M1
-    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_No_IT); // M0 mode input
-    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_No_IT); // M1 mode input
+    GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_IT); // M0 mode input
+    GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_IT); // M1 mode input
 }
 
 Run_Mode_Type GetRunModePin(void)
 {
-    if(stNvCfgParm.classtype == 0x01)
-    {
-        return En_Config_Mode;
-    }
-    else
-    {
-        return En_Normal_Mode;
-    }
-#if 0
-    /*if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN))
+    if(GPIO_ReadInputDataBit(SX1278_TEST_PORT, SX1278_TEST_PIN))
       return En_Test_Mode;
-    else */if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
+    else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN) == 0) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Normal_Mode;
     else if((GPIO_ReadInputDataBit(SX1278_M0_PORT, SX1278_M0_PIN)) && (GPIO_ReadInputDataBit(SX1278_M1_PORT, SX1278_M1_PIN) == 0))
       return En_Wake_Up_Mode;
@@ -146,8 +137,6 @@ Run_Mode_Type GetRunModePin(void)
       return En_Low_Power_Mode;
     else
       return En_Config_Mode;
-    //return En_Low_Power_Mode;
-#endif
 }
 
 void IWDG_Init(void)
@@ -179,6 +168,12 @@ void BoardInitMcu( void )
     GPIO_DeInit(GPIOC);
     GPIO_DeInit(GPIOD);
     InitRunModePin();
+    
+    GPIO_Init(GPIOA, GPIO_Pin_6, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOD, GPIO_Pin_5, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOD, GPIO_Pin_6, GPIO_Mode_Out_PP_Low_Fast);
+    GPIO_Init(GPIOD, GPIO_Pin_7, GPIO_Mode_Out_PP_Low_Fast);
+    
     GPIO_Init(GPIOC, GPIO_Pin_5, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_Out_PP_Low_Fast);
     GPIO_Init(GPIOA, GPIO_Pin_3, GPIO_Mode_Out_PP_Low_Fast);
@@ -231,7 +226,7 @@ void caculatebps(void)
   }
 }
 
-void IndicationRfTxFifoStatus(void)
+/*void IndicationRfTxFifoStatus(void)
 {
     if(ring_buffer_num_items(&uart_rx_ring_buf) > 0)
     {
@@ -241,4 +236,4 @@ void IndicationRfTxFifoStatus(void)
     {
         GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     }
-}
+}*/
