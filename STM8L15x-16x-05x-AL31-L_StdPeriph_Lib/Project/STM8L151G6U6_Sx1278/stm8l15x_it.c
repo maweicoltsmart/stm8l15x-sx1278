@@ -220,7 +220,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
         }
         for(bits = 0;bits < 9;bits ++)
         {
-            delay_10us(79);
+            delay_10us(73);
             (bits % 2)?GPIO_SetBits(SX1278_IO1_PORT, SX1278_IO1_PIN):GPIO_ResetBits(SX1278_IO1_PORT, SX1278_IO1_PIN);
             bit = (GPIO_ReadInputDataBit(SX1278_RX_PORT,SX1278_RX_PIN) & 0x04)?1:0;
             if(bits < 8)

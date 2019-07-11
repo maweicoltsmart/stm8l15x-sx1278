@@ -101,7 +101,8 @@ static void LoRaMacOnRadioRxError( void );
  * \brief Function executed on Radio Rx Timeout event
  */
 static void LoRaMacOnRadioRxTimeout( void );
-static void RadioSetTx(void)
+
+static void RadioSetParma(void)
 {
     uint8_t channellist[24];
     uint8_t enablechannel = 0;
@@ -121,12 +122,16 @@ static void RadioSetTx(void)
     {
         return;
     }
-    uint8_t loop3 = 0;
-    do{
-          GlobalChannel = channellist[randr(0,enablechannel - 1)];//[loop3 % enablechannel];
-          loop3 ++;
-    }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 428200000, -90, 5 ) && (loop3 < enablechannel * 2));
+    //uint8_t loop3 = 0;
+    //do{
+          GlobalChannel = channellist[stTmpCfgParm.LoRaMacDevEui[0] % 2];//[loop3 % enablechannel];
+    //      loop3 ++;
+    //}while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 428200000, -90, 5 ) && (loop3 < enablechannel * 2));
     GlobalDR = 12;//- GlobalChannel % 6;
+}
+static void RadioSetTx(void)
+{
+    Radio.Sleep( );
     Radio.SetChannel( GlobalChannel * 200000 + 428200000 );
     Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 0,
                                    GlobalDR, LORA_CODINGRATE,
@@ -525,6 +530,7 @@ LoRaMacStatus_t LoRaMacInitialization( void )
     // RadioSetRx();    
     Radio.Sleep( );
     Radio.SetPublicNetwork( 0 );
+    RadioSetParma();
     //printf("net mode\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     // Random seed initialization
