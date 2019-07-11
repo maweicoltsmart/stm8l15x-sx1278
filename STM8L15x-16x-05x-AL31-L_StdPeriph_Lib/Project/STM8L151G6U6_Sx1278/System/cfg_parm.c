@@ -55,12 +55,12 @@ void cfg_parm_factory_reset(void)
     //stTmpCfgParm.LoRaMacAppSKey = ;
     stTmpCfgParm.UpLinkCounter = 0;
     stTmpCfgParm.DownLinkCounter = 0;
-    stTmpCfgParm.ChannelMask[0] = 0x01;
+    stTmpCfgParm.ChannelMask[0] = 0x41;
     stTmpCfgParm.ChannelMask[1] = 0x00;
     stTmpCfgParm.ChannelMask[2] = 0x00;
     stTmpCfgParm.TxPower = 20;
     stTmpCfgParm.classtype = 0x01;// 0x01 Class A, 0x02 Class C; Class A by default
-    stTmpCfgParm.netspeed = 7;
+    stTmpCfgParm.netspeed = 12;
 
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
     stNvCfgParm.addr_l = stTmpCfgParm.addr_l;

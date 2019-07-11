@@ -119,8 +119,8 @@ void TIM4_Config(void)
 void InitRunModePin(void)
 {
     GPIO_Init(SX1278_TEST_PORT, SX1278_TEST_PIN, GPIO_Mode_In_FL_No_IT); // test mode input
-    //EXTI_SetPinSensitivity(SX1278_M0_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M0
-    //EXTI_SetPinSensitivity(SX1278_M1_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M1
+    EXTI_SetPinSensitivity(SX1278_M0_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M0
+    EXTI_SetPinSensitivity(SX1278_M1_EXTI_PIN, EXTI_Trigger_Rising_Falling); // M1
     GPIO_Init(SX1278_M0_PORT, SX1278_M0_PIN, GPIO_Mode_In_FL_IT); // M0 mode input
     GPIO_Init(SX1278_M1_PORT, SX1278_M1_PIN, GPIO_Mode_In_FL_IT); // M1 mode input
 }
