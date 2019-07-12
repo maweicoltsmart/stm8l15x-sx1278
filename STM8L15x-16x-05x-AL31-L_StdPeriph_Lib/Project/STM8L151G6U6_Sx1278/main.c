@@ -79,7 +79,7 @@ void main(void)
               config_mode_routin();
               break;*/
             case En_Test_Mode:
-              //test_mode_routin();
+              test_mode_routin();
               break;
         }
     }

@@ -5,7 +5,7 @@
 #include "board.h"
 #include "delay.h"
 
-//ring_buffer_t uart_rx_ring_buf;//,uart_tx_ring_buf;
+ring_buffer_t uart_rx_ring_buf;//,uart_tx_ring_buf;
 
 void ComportInit(void)
 {

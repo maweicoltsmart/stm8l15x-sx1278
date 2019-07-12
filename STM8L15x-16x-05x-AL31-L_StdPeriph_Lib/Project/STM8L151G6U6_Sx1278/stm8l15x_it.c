@@ -114,7 +114,7 @@ INTERRUPT_HANDLER(DMA1_CHANNEL2_3_IRQHandler,3)
   * @param  None
   * @retval None
   */
-//extern ring_buffer_t uart_rx_ring_buf,uart_tx_ring_buf;
+extern ring_buffer_t uart_rx_ring_buf;//,uart_tx_ring_buf;
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
     /* In order to detect unexpected events during development,
@@ -231,8 +231,14 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
             {
                 //if(bit == 1)
                 {
-                    //ring_buffer_queue(&uart_rx_ring_buf,byte);
-                    frame_rx(byte);
+                    if(GetRunModePin() == En_Test_Mode)
+                    {
+                        ring_buffer_queue(&uart_rx_ring_buf,byte);
+                    }
+                    else
+                    {
+                        frame_rx(byte);
+                    }
                 }
             }
         }

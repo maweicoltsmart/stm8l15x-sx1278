@@ -191,7 +191,7 @@ void test_mode_routin(void)
               Radio.Init( &TestModeRadioEvents );
               Radio.Sleep( );
               
-              /*if(ring_buffer_num_items(&uart_rx_ring_buf) > 7)
+              if(ring_buffer_num_items(&uart_rx_ring_buf) > 7)
               {
                   volatile uint32_t timertick;
                   timertick = TimerGetCurrentTime( );
@@ -237,7 +237,7 @@ void test_mode_routin(void)
               else
               {
                   halt();
-              }*/
+              }
               break;
         }
     }
