@@ -12,7 +12,7 @@ void ComportInit(void)
     GPIO_Init(SX1278_RX_PORT, SX1278_RX_PIN, GPIO_Mode_In_PU_No_IT); // UART RX
     USART_Cmd(USART1, DISABLE);
     USART_DeInit(USART1);
-    //ring_buffer_init(&uart_rx_ring_buf);
+    ring_buffer_init(&uart_rx_ring_buf);
     //ring_buffer_init(&uart_tx_ring_buf);
     /* Enable USART clock */
     CLK_PeripheralClockConfig(CLK_Peripheral_USART1, ENABLE);

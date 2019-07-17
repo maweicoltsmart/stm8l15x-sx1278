@@ -57,7 +57,7 @@
 
 //#define UART_RX_BUF_SIZE                32
 //#define UART_TX_BUF_SIZE                32
-#define MAX_RING_BUF_SIZE                10
+#define MAX_RING_BUF_SIZE                8
 
 /** \def CC_ACCESS_NOW(x)
  * This macro ensures that the access to a non-volatile variable can

@@ -187,51 +187,55 @@ void test_mode_routin(void)
               putchar((uint8_t)((TestSnr & 0xff00) >> 8));
               break;
             case En_Low_Power_Mode:
-              Radio.Sleep( );
-              Radio.Init( &TestModeRadioEvents );
-              Radio.Sleep( );
+              //Radio.Sleep( );
+              //Radio.Init( &TestModeRadioEvents );
+              //Radio.Sleep( );
               
-              if(ring_buffer_num_items(&uart_rx_ring_buf) > 7)
+              if((ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte) > 0) && (cmdbyte == '"'))
               {
                   volatile uint32_t timertick;
                   timertick = TimerGetCurrentTime( );
-                  while(TimerGetElapsedTime(timertick) < 300)
+                  uint8_t datalen = 0;
+                  uint8_t checksn = 0;
+                  uint8_t tmpbuffer[64] = {0};
+                  while(TimerGetElapsedTime(timertick) < 100)
                   {
-                      ClearWWDG();
-                  }
-                  while(ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte))
-                  {
-                      if(cmdbyte == '"')
+                      while(ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte) > 0)
                       {
-                          uint8_t datalen = 0;
-                          uint8_t checksn = 0;
-                          do{
-                              ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
-                              factorystring[datalen ++] = cmdbyte;
-                          }
-                          while(cmdbyte != '"');
-                          datalen --;
-                          factorystring[datalen] = 0x00;
-                          uint8_t DEVEUITEMP[16] = {0};
-                          for(uint8_t testloop = 0;testloop < 16;testloop ++)
+                          //ring_buffer_dequeue(&uart_rx_ring_buf, &cmdbyte);
+                          
+                          if(cmdbyte != '"')
                           {
-                              DEVEUITEMP[testloop] = factorystring[datalen - 16 + testloop];
-                          }
-                          checksn = gethex(DEVEUITEMP, DEVEUITEMP, 16);
-                          reverse(DEVEUITEMP, DEVEUITEMP, 8);
-                          for(uint8_t testloop = 0;testloop < 8;testloop ++)
-                          {
-                              LoRaMacDevEuiInFlash[testloop] = DEVEUITEMP[testloop];
-                          }
-                          if(checksn)
-                          {
-                              cfg_parm_factory_reset();
-                              putchar('o');
-                              putchar('k');
-                              putchar('!');
-                              putchar('!');
+                              tmpbuffer[datalen ++] = cmdbyte;
+                              //factorystring[datalen ++] = cmdbyte;
                           }
                       }
+                      ClearWWDG();
+                  }
+                  for(uint8_t loop = 0;loop < datalen;loop ++)
+                  {
+                      factorystring[loop] = tmpbuffer[loop];
+                  }
+                  //datalen --;
+                  factorystring[datalen] = 0x00;
+                  uint8_t DEVEUITEMP[16] = {0};
+                  for(uint8_t testloop = 0;testloop < 16;testloop ++)
+                  {
+                      DEVEUITEMP[testloop] = factorystring[datalen - 16 + testloop];
+                  }
+                  checksn = gethex(DEVEUITEMP, DEVEUITEMP, 16);
+                  reverse(DEVEUITEMP, DEVEUITEMP, 8);
+                  for(uint8_t testloop = 0;testloop < 8;testloop ++)
+                  {
+                      LoRaMacDevEuiInFlash[testloop] = DEVEUITEMP[testloop];
+                  }
+                  if(checksn)
+                  {
+                      cfg_parm_factory_reset();
+                      putchar('o');
+                      putchar('k');
+                      putchar('!');
+                      putchar('!');
                   }
               }
               else
