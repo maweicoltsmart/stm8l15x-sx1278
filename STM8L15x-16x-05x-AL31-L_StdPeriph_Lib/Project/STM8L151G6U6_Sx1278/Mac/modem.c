@@ -85,12 +85,14 @@ void modem_rxdone () {
     } else if(cmd == '&' && len == 2 && tolower(MODEM.cmdbuf[1]) == 'f') { // AT&F factory reset
         Radio.Sleep( );
         stTmpCfgParm.netState = LORAMAC_IDLE;
+        JoinCnt = stTmpCfgParm.rejoincnt;
         cfg_parm_factory_reset();
         rst = true;
         ok = 1;
     }
     else if(cmd == 'j' && len == 1) { // ATJ join network
         stTmpCfgParm.netState = LORAMAC_IDLE;
+        JoinCnt = 0;
         cfg_parm_restore();
         ok = 1;
     }else if(cmd == 'j' && len >= 2) { // JOIN parameters
@@ -106,16 +108,21 @@ void modem_rxdone () {
             reverse(tmp, stTmpCfgParm.LoRaMacAppKey, 16);
             rspbuf += puthex(rspbuf, tmp, 16);
             ok = 1;
-        } else if(MODEM.cmdbuf[1] == '=' && len == 2+16+1+32) { // ATJ= set (deveui,appeui,devkey)
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+16+1+16+1+32) { // ATJ= set (deveui,appeui,devkey)
             uint8_t tmp[16];
             if( gethex(tmp, MODEM.cmdbuf+2, 16) == 8 &&
             MODEM.cmdbuf[2+16] == ',' &&
-            gethex(tmp, MODEM.cmdbuf+2+16+1, 32) == 16 ) {
+            gethex(tmp, MODEM.cmdbuf+2+16+1, 16) == 8 &&
+            MODEM.cmdbuf[2+16+16+1] == ',' &&
+            gethex(tmp, MODEM.cmdbuf+2+16+1+16+1, 32) == 16 ) {
                 gethex(tmp, MODEM.cmdbuf+2, 16);
+                reverse(stTmpCfgParm.LoRaMacDevEui, tmp, 8);
+                gethex(tmp, MODEM.cmdbuf+2+16+1, 16);
                 reverse(stTmpCfgParm.LoRaMacAppEui, tmp, 8);
-                gethex(tmp, MODEM.cmdbuf+2+16+1, 32);
+                gethex(tmp, MODEM.cmdbuf+2+16+1+16+1, 32);
                 reverse(stTmpCfgParm.LoRaMacAppKey, tmp, 16);
                 stTmpCfgParm.netState = LORAMAC_IDLE;
+                JoinCnt = stTmpCfgParm.rejoincnt;
                 cfg_parm_restore();
                 ok = 1;
             }
@@ -210,6 +217,19 @@ void modem_rxdone () {
                     cfg_parm_restore();
                     ok = 1;
                 }
+            }
+        }
+    }else if(cmd == 'n' && len >= 2) { // REJOIN TIMES
+        if(MODEM.cmdbuf[1] == '?' && len == 2) { // ATN? query (rejoin times)
+            rspbuf += cpystr(rspbuf, "OK,");
+            rspbuf += puthex(rspbuf, &stTmpCfgParm.rejoincnt, 1);
+            ok = 1;
+        } else if(MODEM.cmdbuf[1] == '=' && len == 2+2) { // ATN= set (rejoin times)
+            uint8_t tmp[3];
+            if( gethex(tmp, MODEM.cmdbuf+2, 2) == 1) {
+                stTmpCfgParm.rejoincnt = tmp[0];
+                cfg_parm_restore();
+                ok = 1;
             }
         }
     }

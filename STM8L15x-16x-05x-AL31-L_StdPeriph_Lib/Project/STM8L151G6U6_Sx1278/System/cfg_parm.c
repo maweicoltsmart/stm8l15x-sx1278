@@ -61,7 +61,10 @@ void cfg_parm_factory_reset(void)
     stTmpCfgParm.TxPower = 20;
     stTmpCfgParm.classtype = 0x01;// 0x01 Class A, 0x02 Class C; Class A by default
     stTmpCfgParm.netspeed = 7;
-
+    stTmpCfgParm.rejoincnt = 3;
+    for(uint8_t i = 0;i < 8;i ++)
+        stTmpCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
+    
     stNvCfgParm.addr_h = stTmpCfgParm.addr_h;
     stNvCfgParm.addr_l = stTmpCfgParm.addr_l;
     stNvCfgParm.speed.speed = stTmpCfgParm.speed.speed;
@@ -73,10 +76,10 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.DownLinkCounter = stTmpCfgParm.DownLinkCounter;
     for(uint8_t i = 0;i < 8;i ++)
     {
-        stTmpCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
-        stNvCfgParm.LoRaMacDevEui[i] = LoRaMacDevEuiInFlash[i];
+        stNvCfgParm.LoRaMacDevEui[i] = stTmpCfgParm.LoRaMacDevEui[i];
         stNvCfgParm.LoRaMacAppEui[i] = stTmpCfgParm.LoRaMacAppEui[i];
     }
+
     for(uint8_t i = 0;i < 16;i ++)
     {
         stNvCfgParm.LoRaMacAppKey[i] = stTmpCfgParm.LoRaMacAppKey[i];
@@ -87,6 +90,7 @@ void cfg_parm_factory_reset(void)
     stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
     stNvCfgParm.classtype = stTmpCfgParm.classtype;
     stNvCfgParm.netspeed = stTmpCfgParm.netspeed;
+    stNvCfgParm.rejoincnt = stTmpCfgParm.rejoincnt;
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stTmpCfgParm.addr_h,stTmpCfgParm.addr_l,stTmpCfgParm.speed.speed,stTmpCfgParm.channel.channel,stTmpCfgParm.option.option);
     //printf("%s : %02X %02X %02X %02X %02X \r\n",__func__,stNvCfgParm.addr_h,stNvCfgParm.addr_l,stNvCfgParm.speed.speed,stNvCfgParm.channel.channel,stNvCfgParm.option.option);
 }
@@ -101,6 +105,8 @@ void cfg_parm_restore(void)
     stNvCfgParm.inNetMode = stTmpCfgParm.inNetMode;
     stNvCfgParm.netState = stTmpCfgParm.netState;
     
+    for(uint8_t i = 0;i < 8;i ++)
+      stNvCfgParm.LoRaMacDevEui[i] = stTmpCfgParm.LoRaMacDevEui[i];
     for(uint8_t i = 0;i < 8;i ++)
       stNvCfgParm.LoRaMacAppEui[i] = stTmpCfgParm.LoRaMacAppEui[i];
     for(uint8_t i = 0;i < 16;i ++)
@@ -122,6 +128,7 @@ void cfg_parm_restore(void)
     stNvCfgParm.TxPower = stTmpCfgParm.TxPower;
     stNvCfgParm.classtype = stTmpCfgParm.classtype;
     stNvCfgParm.netspeed = stTmpCfgParm.netspeed;
+    stNvCfgParm.rejoincnt = stTmpCfgParm.rejoincnt;
 }
 
 void cfg_parm_dump_to_ram(void)
@@ -159,6 +166,7 @@ void cfg_parm_dump_to_ram(void)
     stTmpCfgParm.TxPower = stNvCfgParm.TxPower;
     stTmpCfgParm.classtype = stNvCfgParm.classtype;
     stTmpCfgParm.netspeed = stNvCfgParm.netspeed;
+    stTmpCfgParm.rejoincnt = stNvCfgParm.rejoincnt;
 }
 
 uint8_t cfg_parm_get_tx_power(void)

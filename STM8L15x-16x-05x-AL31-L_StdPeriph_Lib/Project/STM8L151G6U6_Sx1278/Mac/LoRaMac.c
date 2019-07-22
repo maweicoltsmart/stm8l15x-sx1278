@@ -150,6 +150,7 @@ static int16_t RxDonerssi;
 static int8_t RxDonesnr;
 static bool RxDoneFlag = false;
 static bool TxDoneFlag = false;
+uint8_t JoinCnt = 3;
 static void LoRaMacOnRadioTxDone( void )
 {
     TxDoneFlag = true;
@@ -513,6 +514,7 @@ LoRaMacStatus_t SendJoinRequest( void )
     uint8_t pktHeaderLen = 0;
     uint32_t mic = 0;
     
+    JoinCnt ++;
     macHdr.Bits.Major = 1;
     macHdr.Bits.MType = FRAME_TYPE_JOIN_REQ;
     if(GetRunModePin() == En_Normal_Mode)
@@ -591,6 +593,7 @@ void LoRaMacStateCheck( void )
     char byte;
     
     LoRaMacInitialization();
+    JoinCnt = stTmpCfgParm.rejoincnt;
     while(stTmpCfgParm.inNetMode == TRUE)
     {
         ClearWWDG();
@@ -625,8 +628,15 @@ void LoRaMacStateCheck( void )
         switch(stTmpCfgParm.netState)
         {
             case LORAMAC_IDLE:
-              SendJoinRequest();
-              stTmpCfgParm.netState = LORAMAC_JOINING;
+              if(JoinCnt < stTmpCfgParm.rejoincnt)
+              {
+                  SendJoinRequest();
+                  stTmpCfgParm.netState = LORAMAC_JOINING;
+              }
+              else
+              {
+                  halt();
+              }
               break;
             case LORAMAC_JOINING:
               if((GetRunModePin() != En_Normal_Mode) && (!modem_rxdone_flag) && (!RxDoneFlag) && (!TxDoneFlag))
