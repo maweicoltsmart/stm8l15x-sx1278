@@ -88,7 +88,7 @@ void SX1276IoInit( void )
 {
     GPIO_Init(SX1278_NRST_PORT, SX1278_NRST_PIN, GPIO_Mode_Out_PP_Low_Fast); // SX1278 RST
     GPIO_Init(SX1278_RF_SWITCH_PORT, SX1278_RF_SWITCH_PIN, GPIO_Mode_Out_PP_Low_Fast); // SX1278 RF SWITCH
-
+    GPIO_Init(SX1278_RF_PA_PORT, SX1278_RF_PA_PIN, GPIO_Mode_Out_PP_Low_Fast); // SX1278 RF SWITCH
 #if defined( USE_RADIO_DEBUG )
     GpioInit( &DbgPinTx, RADIO_DBG_PIN_TX, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
     GpioInit( &DbgPinRx, RADIO_DBG_PIN_RX, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
@@ -369,6 +369,7 @@ void SX1276AntSwInit( void )
     //Chip_IOCON_PinSetMode(LPC_IOCON,IOCON_PIO17,PIN_MODE_REPEATER);
     //Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, 0, 17);
     GPIO_ResetBits(SX1278_RF_SWITCH_PORT, SX1278_RF_SWITCH_PIN); /* rf switch pin low */
+    GPIO_SetBits(SX1278_RF_PA_PORT, SX1278_RF_PA_PIN); /* rf switch pin low */
 }
 
 void SX1276AntSwDeInit( void )
@@ -376,6 +377,7 @@ void SX1276AntSwDeInit( void )
     //Chip_IOCON_PinSetMode(LPC_IOCON,IOCON_PIO17,PIN_MODE_INACTIVE);
     //Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,0,17);
     GPIO_ResetBits(SX1278_RF_SWITCH_PORT, SX1278_RF_SWITCH_PIN); /* rf switch pin low */
+    GPIO_ResetBits(SX1278_RF_PA_PORT, SX1278_RF_PA_PIN); /* rf switch pin low */
 }
 
 void SX1276SetAntSw( uint8_t opMode )
@@ -386,6 +388,7 @@ void SX1276SetAntSw( uint8_t opMode )
     case RFLR_OPMODE_TRANSMITTER:
         //Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,0,17);
         GPIO_ResetBits(SX1278_RF_SWITCH_PORT, SX1278_RF_SWITCH_PIN); /* rf switch pin low */
+        GPIO_SetBits(SX1278_RF_PA_PORT, SX1278_RF_PA_PIN); /* rf switch pin low */
         break;
     case RFLR_OPMODE_RECEIVER:
     case RFLR_OPMODE_RECEIVER_SINGLE:
@@ -393,6 +396,7 @@ void SX1276SetAntSw( uint8_t opMode )
     default:
         //Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,0,17);
         GPIO_SetBits(SX1278_RF_SWITCH_PORT, SX1278_RF_SWITCH_PIN); /* rf switch pin high */
+        GPIO_ResetBits(SX1278_RF_PA_PORT, SX1278_RF_PA_PIN); /* rf switch pin high */
         break;
     }
 }

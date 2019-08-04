@@ -25,6 +25,8 @@ typedef enum{
 
 #define SX1278_RF_SWITCH_PORT        GPIOB
 #define SX1278_RF_SWITCH_PIN         GPIO_Pin_3
+#define SX1278_RF_PA_PORT        GPIOB
+#define SX1278_RF_PA_PIN         GPIO_Pin_2
 
 #define SX1278_DIO0_PORT                GPIOA
 #define SX1278_DIO0_PIN                 GPIO_Pin_5
