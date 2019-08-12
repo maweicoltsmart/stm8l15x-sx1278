@@ -72,7 +72,7 @@ static RadioEvents_t LoRaMacRadioEvents;
 TimerEvent_t AckTimeoutTimer;
 uint32_t TxDoneTimerTick;
 uint8_t GlobalChannel;
-//uint8_t GlobalDR;
+uint8_t GlobalDR;
 LoRaMacFrameCtrl_t RxfCtrl;
 uint8_t RxDataLen = 0;
 uint8_t *pRxDataBuf = NULL;
@@ -101,7 +101,7 @@ static void LoRaMacOnRadioRxError( void );
  * \brief Function executed on Radio Rx Timeout event
  */
 static void LoRaMacOnRadioRxTimeout( void );
-void RadioSetTx(void)
+static void RadioSetParma(void)
 {
     uint8_t channellist[24];
     uint8_t enablechannel = 0;
@@ -121,15 +121,19 @@ void RadioSetTx(void)
     {
         return;
     }
-    uint8_t loop3 = 0;
-    do{
-          GlobalChannel = channellist[randr(0,enablechannel - 1)];//[loop3 % enablechannel];
-          loop3 ++;
-    }while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 428200000, -90, 5 ) && (loop3 < enablechannel * 2));
-    //GlobalDR = 7;//- GlobalChannel % 6;
+    //uint8_t loop3 = 0;
+    //do{
+          GlobalChannel = channellist[stTmpCfgParm.LoRaMacDevEui[0] % 2];//[loop3 % enablechannel];
+    //      loop3 ++;
+    //}while(!Radio.IsChannelFree ( MODEM_LORA, GlobalChannel * 200000 + 428200000, -90, 5 ) && (loop3 < enablechannel * 2));
+    GlobalDR = 12;//- GlobalChannel % 6;
+}
+void RadioSetTx(void)
+{
+    Radio.Sleep( );
     Radio.SetChannel( GlobalChannel * 200000 + 428200000 );
     Radio.SetTxConfig( MODEM_LORA, stTmpCfgParm.TxPower, 0, 0,
-                                   stTmpCfgParm.netspeed, LORA_CODINGRATE,
+                                   GlobalDR, LORA_CODINGRATE,
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    true, false, 0, LORA_IQ_INVERSION_ON, 4000 );
 }
@@ -139,11 +143,12 @@ void RadioSetRx(void)
     Radio.Sleep( );
     Radio.SetChannel( (GlobalChannel + 24)* 200000 + 428200000 );
 
-    Radio.SetRxConfig( MODEM_LORA, 0, stTmpCfgParm.netspeed,
+    Radio.SetRxConfig( MODEM_LORA, 0, GlobalDR,
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, false, 0, LORA_IQ_INVERSION_ON, true );
 }
+
 static uint8_t *RxDonepayload;
 static uint16_t RxDonesize;
 static int16_t RxDonerssi;
@@ -471,7 +476,10 @@ LoRaMacStatus_t SendFrameOnChannel( uint8_t channel,uint8_t *data,uint8_t len,ui
     }
     //macHdr.Bits.RFU = CLASS_C;
     fCtrl.Value = 0;
-
+    if(RxfCtrl.Bits.AdrAckReq)
+    {
+        fCtrl.Bits.Ack = true;
+    }
     LoRaMacBuffer[pktHeaderLen++] = macHdr.Value;
     LoRaMacBuffer[pktHeaderLen++] = ( stTmpCfgParm.LoRaMacDevAddr ) & 0xFF;
     LoRaMacBuffer[pktHeaderLen++] = ( stTmpCfgParm.LoRaMacDevAddr >> 8 ) & 0xFF;
@@ -575,6 +583,7 @@ LoRaMacStatus_t LoRaMacInitialization( void )
     // RadioSetRx();    
     Radio.Sleep( );
     Radio.SetPublicNetwork( 0 );
+    RadioSetParma();
     //printf("net mode\r\n");
     GPIO_SetBits(SX1278_AUX_PORT, SX1278_AUX_PIN);
     // Random seed initialization

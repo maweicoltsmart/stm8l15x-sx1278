@@ -77,12 +77,12 @@ void modem_rxdone () {
         Radio.Sleep( );
         rst = true;
         ok = 1;
-    } else if(cmd == 'q' && len == 1) { // ATQ quit net mode
+    }/* else if(cmd == 'q' && len == 1) { // ATQ quit net mode
         stTmpCfgParm.inNetMode = FALSE;
         cfg_parm_restore();
         rst = true;
         ok = 1;
-    } else if(cmd == '&' && len == 2 && tolower(MODEM.cmdbuf[1]) == 'f') { // AT&F factory reset
+    }*/ else if(cmd == '&' && len == 2 && tolower(MODEM.cmdbuf[1]) == 'f') { // AT&F factory reset
         Radio.Sleep( );
         stTmpCfgParm.netState = LORAMAC_IDLE;
         cfg_parm_factory_reset();
